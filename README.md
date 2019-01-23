@@ -10,11 +10,6 @@ $ operator-courier
 ```
 
 ## Testing
-### Prereqs
-Install [Nose](https://nose.readthedocs.io/en/latest/)
-```bash
-$ pip install nose
-```
 
 ### Running the tests
 ```bash 

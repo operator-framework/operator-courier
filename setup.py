@@ -11,6 +11,6 @@ setup(
     'console_scripts': ['operator-courier=command.cli:main'],
   },
   keywords = ['operator', 'courier'],
-  test_suite='nose.collector',
-  tests_require=['nose'],
+  setup_requires=['pytest-runner'],
+  tests_require=['pytest'],
 )
