@@ -11,5 +11,4 @@ def all_commands():
 
 def main():
     BuildCmd().build()
-    PushCmd().push()
     ValidateCmd().validate()
