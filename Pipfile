@@ -8,6 +8,8 @@ name = "pypi"
 [packages]
 
 requests = "*"
+pytest = "*"
+pyyaml = "*"
 
 
 [dev-packages]
