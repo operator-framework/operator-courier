@@ -10,5 +10,4 @@ def all_commands():
     }
 
 def main():
-    BuildCmd().build()
     ValidateCmd().validate()
