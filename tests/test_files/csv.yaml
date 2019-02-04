@@ -5,6 +5,16 @@ kind: ClusterServiceVersion
 metadata:
   name: marketplace-operator.v0.0.1
   namespace: placeholder
+  annotations:
+    categories: openshift required
+    certified: 'true'
+    containerImage: quay.io/openshift/origin-operator-marketplace:latest
+    createdAt: 2018-08-01T08:00:00Z
+    description: An operator to run the OpenShift marketplace
+    healthIndex: B
+    repository: https://github.com/operator-framework/operator-marketplace
+    support: Red Hat
+    alm-examples: '[{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdCluster","metadata":{"name":"example","namespace":"default"},"spec":{"size":3,"version":"3.2.13"}},{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdRestore","metadata":{"name":"example-etcd-cluster"},"spec":{"etcdCluster":{"name":"example-etcd-cluster"},"backupStorageType":"S3","s3":{"path":"<full-s3-path>","awsSecret":"<aws-secret>"}}},{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdBackup","metadata":{"name":"example-etcd-cluster-backup"},"spec":{"etcdEndpoints":["<etcd-cluster-endpoints>"],"storageType":"S3","s3":{"path":"<full-s3-path>","awsSecret":"<aws-secret>"}}}]'
 spec:
   displayName: marketplace-operator
   description: |-
@@ -25,6 +35,15 @@ spec:
   links:
   - name: Markplace Operator Source Code
     url: https://github.com/operator-framework/operator-marketplace
+  installModes:
+  - type: OwnNamespace
+    supported: true
+  - type: SingleNamespace
+    supported: true
+  - type: MultiNamespace
+    supported: false
+  - type: AllNamespaces
+    supported: true
   install:
     strategy: deployment
     spec:
