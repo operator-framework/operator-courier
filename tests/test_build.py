@@ -1,6 +1,6 @@
 from unittest import TestCase
 import pytest
-from command.build import BuildCmd
+from operatorcourier.build import BuildCmd
 
 
 def test_create_bundle():

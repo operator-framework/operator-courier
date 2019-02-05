@@ -1,6 +1,6 @@
 import pytest
 import yaml
-from command.validate import ValidateCmd
+from operatorcourier.validate import ValidateCmd
 
 #use same variable name twice!
 
