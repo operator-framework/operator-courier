@@ -1,5 +1,5 @@
 import yaml
-from command import identify
+import operatorcourier.identify as identify
 
 class BuildCmd():
     def _get_empty_bundle(self):

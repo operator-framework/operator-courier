@@ -1,6 +1,6 @@
 from unittest import TestCase
 import pytest
-import command.identify as identify
+import operatorcourier.identify as identify
 
 @pytest.mark.parametrize('fname,expected', [
 ("tests/test_files/csv.yaml", "ClusterServiceVersion"),
