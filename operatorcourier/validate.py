@@ -108,11 +108,11 @@ class ValidateCmd():
                 logger.warning("csv spec.%s not defined" % item)
 
         if "installModes" not in spec:
-            logger.error("csv spec.installModes not defined" % item)
+            logger.error("csv spec.installModes not defined")
             valid = False
 
         if "install" not in spec:
-            logger.error("csv spec.install not defined" % item)
+            logger.error("csv spec.install not defined")
             valid = False
 
         if "customresourcedefinitions" in spec:
