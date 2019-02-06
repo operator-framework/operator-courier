@@ -6,7 +6,7 @@ def get_operator_artifact_type(operatorArtifactString):
 
     :param operatorArtifactString: Yaml string to type check
     """
-    operatorArtifact = yaml.load(operatorArtifactString)
+    operatorArtifact = yaml.safe_load(operatorArtifactString)
     if isinstance(operatorArtifact, dict):
         if "packageName" in operatorArtifact:
             return "Package"

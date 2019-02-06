@@ -10,7 +10,7 @@ def test_make_bundle(directory, expected):
     bundle = api.build_and_verify(source_dir=directory)
 
     with open(expected, "r") as expected_file:
-        expected_bundle = yaml.load(expected_file)
+        expected_bundle = yaml.safe_load(expected_file)
         assert bundle == expected_bundle
 
 @pytest.mark.parametrize('yaml_files,expected', [
@@ -28,5 +28,5 @@ def test_make_bundle_with_yaml_list(yaml_files, expected):
     bundle = api.build_and_verify(yamls=yamls)
 
     with open(expected, "r") as expected_file:
-        expected_bundle = yaml.load(expected_file)
+        expected_bundle = yaml.safe_load(expected_file)
         assert bundle == expected_bundle
