@@ -1,6 +1,6 @@
 data:
   customResourceDefinitions: |-
-  clusterServiceVersions:
+  clusterServiceVersions: |-
     - #! validate-crd: deploy/chart/templates/0000_30_02-clusterserviceversion.crd.yaml
       #! parse-kind: ClusterServiceVersion
       apiVersion: operators.coreos.com/v1alpha1
@@ -387,7 +387,7 @@ data:
             deploymentName: svcat-apiserver
             containerPort: 5443
       
-  packages:
+  packages: |-
     - #! package-manifest: deploy/chart/catalog_resources/rh-operators/svcat.v0.1.34.clusterserviceversion.yaml
       packageName: svcat
       channels:

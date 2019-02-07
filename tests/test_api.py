@@ -2,6 +2,7 @@ from unittest import TestCase
 import pytest
 import yaml
 from operatorcourier import api
+from operatorcourier.format import unformat_bundle
 
 @pytest.mark.parametrize('directory,expected', [
 ("tests/test_files/bundles/api/bundle1", "tests/test_files/bundles/api/bundle1/results/bundle.yaml"),
@@ -11,7 +12,7 @@ def test_make_bundle(directory, expected):
 
     with open(expected, "r") as expected_file:
         expected_bundle = yaml.safe_load(expected_file)
-        assert bundle == expected_bundle
+        assert unformat_bundle(bundle) == unformat_bundle(expected_bundle)
 
 @pytest.mark.parametrize('yaml_files,expected', [
 (["tests/test_files/bundles/api/bundle1/crd.yml",
@@ -29,4 +30,4 @@ def test_make_bundle_with_yaml_list(yaml_files, expected):
 
     with open(expected, "r") as expected_file:
         expected_bundle = yaml.safe_load(expected_file)
-        assert bundle == expected_bundle
+        assert unformat_bundle(bundle) == unformat_bundle(expected_bundle)

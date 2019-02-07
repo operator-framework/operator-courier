@@ -11,6 +11,7 @@ import yaml
 from operatorcourier.build import BuildCmd
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
+from operatorcourier.format import format_bundle
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,9 @@ def build_and_verify(source_dir=None, yamls=None):
     if not valid:
         bundle = None
         logger.error("Bundle failed validation.")
-
+    else:
+        bundle = format_bundle(bundle)
+    
     return bundle
 
 def build_verify_and_push(namespace, repository, revision, token, source_dir=None, yamls=None):
