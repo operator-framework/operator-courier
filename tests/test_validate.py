@@ -1,6 +1,7 @@
 import pytest
 import yaml
 from operatorcourier.validate import ValidateCmd
+from operatorcourier.format import unformat_bundle
 
 #use same variable name twice!
 
@@ -9,6 +10,7 @@ def test_valid_bundles():
     for bundle in bundles:
         with open(bundle) as f:
             bundle = yaml.safe_load(f)
+            bundle = unformat_bundle(bundle)
             valid = ValidateCmd().validate(bundle)
             assert valid == True
 
@@ -17,5 +19,6 @@ def test_invalid_bundle():
     for bundle in bundles:
         with open(bundle) as f:
             bundle = yaml.safe_load(f)
+            bundle = unformat_bundle(bundle)
             valid = ValidateCmd().validate(bundle)
             assert valid == False
