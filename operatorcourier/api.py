@@ -13,6 +13,7 @@ from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
 from operatorcourier.format import format_bundle
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 def build_and_verify(source_dir=None, yamls=None):
