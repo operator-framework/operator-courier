@@ -44,4 +44,13 @@ class PushCmd():
         r = requests.post(push_uri, json=json, headers=headers)
         if r.status_code != 200:
             logger.error(r.text)
-            raise ValueError("Registry api returned non 200 response. Failed to push to app registry.")
+
+            msg = 'Failed to get error details'
+            try:
+                error = r.json()['error']
+                msg = "Quay.io answered: '{}' ({})".format(
+                    error['code'], error['message'])
+            except Exception:
+                pass
+
+            raise ValueError("Failed to push to app registry: {}".format(msg))
