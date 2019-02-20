@@ -32,6 +32,21 @@ $ operator-courier -h
 $ operator-courier push -h
 ```
 
+### Authentication
+Currently, the quay API used by the courier can only be authenticated using quay.io's basic account token authentication. In order to get this token to authenticate with quay, a request needs to be made against the login API. This requires a normal quay.io account, and takes a username and password as parameters. This will return an auth token which can be passed to the courier.
+
+```bash
+$ TOKEN=$(curl -sH "Content-Type: application/json" -XPOST https://quay.io/cnr/api/v1/users/login -d '
+{
+    "user": {
+        "username": "'"${QUAY_USERNAME}"'",
+        "password": "'"${QUAY_PASSWORD}"'"
+    }
+}' | jq -r '.token')
+```
+
+Expecting future enhancements, this authentication process will change somewhat in future releases.
+
 ## Library
 To use the Operator Courier in your project, simply install the Operator Courier pip package. Then import the api module:
 
