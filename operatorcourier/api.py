@@ -12,6 +12,7 @@ from operatorcourier.build import BuildCmd
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
 from operatorcourier.format import format_bundle
+from operatorcourier.nest import nest_bundles
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -73,3 +74,21 @@ def build_verify_and_push(namespace, repository, revision, token, source_dir=Non
     else:
         logger.error("Bundle is invalid. Will not attempt to push.")
         raise ValueError("Resulting bundle is invalid, input yaml is improperly defined.")
+
+def nest(source_dir, registry_dir):
+    """Nest takes a flat bundle directory and version nests it to eventually be consumed as part of an operator-registry image build.
+
+    :param source_dir: Path to local directory of yaml files to be read
+    :param output_dir: Path of your directory to be populated. If directory does not exist, it will be created.
+    """
+    
+    yaml_files = []
+
+    if source_dir is not None: 
+        for filename in os.listdir(source_dir):
+            if filename.endswith(".yaml") or filename.endswith(".yml"):
+                with open(source_dir + "/" + filename) as f:
+                    yaml_files.append(f.read())
+
+    with TemporaryDirectory() as temp_dir:
+        nest_bundles(yaml_files, registry_dir, temp_dir)
