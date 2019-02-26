@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name='operator-courier',
   packages=['operatorcourier'],
-  version='1.0.1',
+  version='1.0.2',
   description='Build, verify and push operators',
   author='AOS Marketplace',
   author_email='aos-marketplace@redhat.com',
