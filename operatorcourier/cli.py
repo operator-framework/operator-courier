@@ -25,6 +25,7 @@ class _CliParser():
 These are the commands you can use:
     verify      Create a bundle and test it for correctness.
     push        Create a bundle, test it, and push it to an app registry.
+    nest        Take a flat to-be-bundled directory and version nest it.
 ''')
         parser.add_argument('command', help='Subcommand to run')
 
@@ -53,3 +54,12 @@ These are the commands you can use:
 
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.build_verify_and_push(args.namespace, args.repository, args.release, args.token, source_dir=args.source_dir)
+
+    # Parse the push command
+    def nest(self):
+        parser = argparse.ArgumentParser(description='Take a flat bundle directory and version nest it to eventually create an operator-registry image.')
+        parser.add_argument('source_dir', help='Path of your directory of yaml files to bundle.')
+        parser.add_argument('registry_dir', help='Path of your directory to be populated. If directory does not exist, it will be created.')
+
+        args, leftovers = parser.parse_known_args(sys.argv[2:])
+        api.nest(args.source_dir, args.registry_dir)
