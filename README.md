@@ -20,7 +20,7 @@ $ operator-courier verify $BUNDLE_DIR
 To generate an operator bundle and push it to a quay.io app registry just use `operator-courier push`. Just pass the directory, namespace, repository, release version and quay.io authorization token needed to push.
 
 ```bash
-$ operator-courier push $BUNDLE_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REPOSITORY $EXAMPLE_RELEASE $AUTH_TOKEN
+$ operator-courier push $BUNDLE_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REPOSITORY $EXAMPLE_RELEASE "$AUTH_TOKEN"
 ```
 
 Once that is created, you should be able to view your bundle on quay.io's Application page for your particular namespace, repo, and release version (https://quay.io/application/$EXAMPLE_NAMESPACE/$EXAMPLE_REPOSITORY?tab=$EXAMPLE_RELEASE)
@@ -36,7 +36,7 @@ $ operator-courier push -h
 Currently, the quay API used by the courier can only be authenticated using quay.io's basic account token authentication. In order to get this token to authenticate with quay, a request needs to be made against the login API. This requires a normal quay.io account, and takes a username and password as parameters. This will return an auth token which can be passed to the courier.
 
 ```bash
-$ TOKEN=$(curl -sH "Content-Type: application/json" -XPOST https://quay.io/cnr/api/v1/users/login -d '
+$ AUTH_TOKEN=$(curl -sH "Content-Type: application/json" -XPOST https://quay.io/cnr/api/v1/users/login -d '
 {
     "user": {
         "username": "'"${QUAY_USERNAME}"'",
