@@ -55,7 +55,7 @@ These are the commands you can use:
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.build_verify_and_push(args.namespace, args.repository, args.release, args.token, source_dir=args.source_dir)
 
-    # Parse the push command
+    # Parse the nest command
     def nest(self):
         parser = argparse.ArgumentParser(description='Take a flat bundle directory and version nest it to eventually create an operator-registry image.')
         parser.add_argument('source_dir', help='Path of your directory of yaml files to bundle.')
@@ -63,3 +63,9 @@ These are the commands you can use:
 
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.nest(args.source_dir, args.registry_dir)
+
+    #Parse the version command
+    def version(self):
+        parser = argparse.ArgumentParser(prog='operator-courier')
+        parser.add_argument('--version',action='version')
+        parser.parse_args(['--version'])
