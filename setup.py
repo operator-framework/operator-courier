@@ -17,7 +17,9 @@ setup(
   keywords=['operator', 'courier'],
   install_requires=[
     'pyyaml',
-    'requests'
+    'requests',
+    'regex',
+    'validators'
   ],
   setup_requires=['pytest-runner'],
   tests_require=['pytest'],

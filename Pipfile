@@ -4,9 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+
+validators = "*"
 requests = "*"
 pytest = "*"
 pyyaml = "*"
 twine = "*"
+regex = "*"
+
 
 [dev-packages]

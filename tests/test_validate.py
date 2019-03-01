@@ -22,3 +22,12 @@ def test_invalid_bundle():
             bundle = unformat_bundle(bundle)
             valid = ValidateCmd().validate(bundle)
             assert valid == False
+
+def test_ui_valid_bundle_io():
+    bundles = ["tests/test_files/bundles/verification/valid.bundle.yaml"]
+    for bundle in bundles:
+        with open(bundle) as f:
+            bundle = yaml.safe_load(f)
+            bundle = unformat_bundle(bundle)
+            valid = ValidateCmd(ui_validate_io=True).validate(bundle)
+            assert valid == True
