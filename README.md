@@ -71,6 +71,12 @@ $ operator-courier
 ## Testing
 
 ### Running the tests
+
+[Install tox](https://tox.readthedocs.io/en/latest/install.html) and run:
+
 ```bash 
-$ python3 setup.py test
+$ tox
 ```
+
+This will run the tests with several versions of Python 3, measure coverage,
+and run flake8 for code linting.

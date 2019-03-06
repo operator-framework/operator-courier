@@ -3,6 +3,10 @@ from setuptools import setup
 with open('README.md', 'r') as f:
     long_description = f.read()
 
+tests_require = [
+  'pytest',
+]
+
 setup(
   name='operator-courier',
   packages=['operatorcourier'],
@@ -22,7 +26,10 @@ setup(
     'validators'
   ],
   setup_requires=['pytest-runner'],
-  tests_require=['pytest'],
+  tests_require=tests_require,
+  extras_require={
+    'test': tests_require,
+  },
   long_description=long_description,
   long_description_content_type="text/markdown",
   license="Apache License 2.0",
