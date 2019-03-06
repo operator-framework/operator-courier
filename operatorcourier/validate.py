@@ -215,7 +215,7 @@ class ValidateCmd():
                             logger.error("package channel.currentCSV not defined.")
                         else:
                             if channel["currentCSV"] not in csvNames:
-                                logger.error("channel.currentCSV %s is not included in list of csvs")
+                                logger.error("channel.currentCSV %s is not included in list of csvs", channel["currentCSV"])
                                 valid = False
 
             else:
