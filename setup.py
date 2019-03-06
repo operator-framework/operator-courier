@@ -5,6 +5,7 @@ with open('README.md', 'r') as f:
 
 tests_require = [
   'pytest',
+  'pytest-cov'
 ]
 
 setup(
