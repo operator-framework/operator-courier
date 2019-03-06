@@ -17,8 +17,8 @@ def test_get_operator_artifact_type(fname, expected):
 ("tests/test_files/invalid.yaml"),
 ("tests/test_files/empty.yaml"),
 ])
-@pytest.mark.xfail(raises=ValueError)
 def test_get_operator_artifact_type_assertions(fname):
     with open(fname) as f:
         yaml = f.read()
-        identify.get_operator_artifact_type(yaml)
+        with pytest.raises(ValueError):
+            identify.get_operator_artifact_type(yaml)
