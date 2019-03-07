@@ -9,6 +9,6 @@ def test_create_bundle():
             yamls.append(f.read())
 
     bundle = BuildCmd().build_bundle(yamls)
-    assert bool(bundle["data"]["packages"]) == True
-    assert bool(bundle["data"]["clusterServiceVersions"]) == True
-    assert bool(bundle["data"]["customResourceDefinitions"]) == True
+    assert bool(bundle["data"]["packages"]) is True
+    assert bool(bundle["data"]["clusterServiceVersions"]) is True
+    assert bool(bundle["data"]["customResourceDefinitions"]) is True

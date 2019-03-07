@@ -35,7 +35,7 @@ class ValidateCmd():
 
         if self.dataKey not in bundle:
             logger.error("Bundle does not contain base data field.")
-            #break here because there's nothing else to learn
+            # break here because there's nothing else to learn
             return False
 
         bundleData = bundle[self.dataKey]
@@ -179,7 +179,7 @@ class ValidateCmd():
             # if alm-examples is defined, check that its value is valid json
             if "alm-examples" in annotations:
                 try:
-                    valid_json = json.loads(annotations["alm-examples"])
+                    json.loads(annotations["alm-examples"])
                 except KeyError:
                     logger.error("metadata.annotations.alm-examples contains invalid json string")
                     valid = False

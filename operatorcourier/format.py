@@ -2,7 +2,8 @@ import yaml
 from operatorcourier.build import BuildCmd
 
 
-class _literal(str): pass
+class _literal(str):
+    pass
 
 
 def _literal_presenter(dumper, data):
