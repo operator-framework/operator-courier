@@ -15,7 +15,7 @@ def test_valid_bundles():
             assert valid == True
 
 def test_invalid_bundle():
-    bundles = ["tests/test_files/bundles/verification/invalid.bundle.yaml"]
+    bundles = ["tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml"]
     for bundle in bundles:
         with open(bundle) as f:
             bundle = yaml.safe_load(f)

@@ -5,8 +5,11 @@ from operatorcourier import api
 def main():
     """Generate the CLI bits
     """
-    parser = _CliParser()
-    parser.parse()
+    try:
+        parser = _CliParser()
+        parser.parse()
+    except Exception as e:  # Exception raised to CLI should not be thrown to users,
+        sys.exit(str(e))    # it should just be captured by logs
 
 class _CliParser():
     """Class that generates the command line bits for the operator-courier cli tool
