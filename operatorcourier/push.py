@@ -6,12 +6,13 @@ from tempfile import TemporaryDirectory
 
 logger = logging.getLogger(__name__)
 
+
 class PushCmd():
     name = 'push'
 
     def __init__(self):
         pass
-        
+
     def push(self, bundle_dir, namespace, repository, release, auth_token):
         """Push takes a bundle and pushes it to the specified app registry repository.
 
@@ -27,7 +28,7 @@ class PushCmd():
 
     def _create_base64_bundle(self, bundle_dir, repository):
         with TemporaryDirectory() as temp_dir:
-            tarfile_name = "%s/%s.tar.gz" % (temp_dir,repository)
+            tarfile_name = "%s/%s.tar.gz" % (temp_dir, repository)
             with tarfile.open(tarfile_name, "w:gz") as tar:
                 tar.add(bundle_dir, "")
             with open(tarfile_name, "rb") as tarball:

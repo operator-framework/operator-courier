@@ -2,7 +2,6 @@ import yaml
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.format import unformat_bundle
 
-#use same variable name twice!
 
 def test_valid_bundles():
     bundles = ["tests/test_files/bundles/verification/valid.bundle.yaml", "tests/test_files/bundles/verification/nocrd.valid.bundle.yaml"]
@@ -12,6 +11,7 @@ def test_valid_bundles():
             bundle = unformat_bundle(bundle)
             valid = ValidateCmd().validate(bundle)
             assert valid == True
+
 
 def test_invalid_bundle():
     bundles = ["tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml"]

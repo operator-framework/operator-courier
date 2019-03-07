@@ -6,6 +6,7 @@ import operatorcourier.identify as identify
 
 logger = logging.getLogger(__name__)
 
+
 def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
     package = {}
     crds = {}

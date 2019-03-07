@@ -2,6 +2,7 @@ import argparse
 import sys
 from operatorcourier import api
 
+
 def main():
     """Generate the CLI bits
     """
@@ -10,6 +11,7 @@ def main():
         parser.parse()
     except Exception as e:  # Exception raised to CLI should not be thrown to users,
         sys.exit(str(e))    # it should just be captured by logs
+
 
 class _CliParser():
     """Class that generates the command line bits for the operator-courier cli tool
@@ -35,7 +37,7 @@ These are the commands you can use:
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             parser.error('Unrecognized command')
-        
+
         getattr(self, args.command)()
 
     # Parse the verify command
@@ -44,9 +46,9 @@ These are the commands you can use:
         parser.add_argument('source_dir', help='Path of your directory of yaml files to bundle. Either set this or use the files argument for bundle data.')
         parser.add_argument('--ui_validate_io', help='Validate bundle for operatorhub.io UI', action='store_true')
 
-        args, leftovers = parser.parse_known_args(sys.argv[2:])       
+        args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.build_and_verify(source_dir=args.source_dir, ui_validate_io=args.ui_validate_io)
-    
+
     # Parse the push command
     def push(self):
         parser = argparse.ArgumentParser(description='Build, verify and push an operator bundle into external app registry.')

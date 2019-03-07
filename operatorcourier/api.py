@@ -17,6 +17,7 @@ from operatorcourier.nest import nest_bundles
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
+
 def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
     """Build and verify constructs an operator bundle from a set of files and then verifies it for usefulness and accuracy.
     It returns the bundle as a string.
@@ -31,7 +32,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
 
     yaml_files = []
 
-    if source_dir is not None: 
+    if source_dir is not None:
         for filename in os.listdir(source_dir):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
                 with open(source_dir + "/" + filename) as f:
@@ -48,8 +49,9 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
         logger.error("Bundle failed validation.")
     else:
         bundle = format_bundle(bundle)
-    
+
     return bundle
+
 
 def build_verify_and_push(namespace, repository, revision, token, source_dir=None, yamls=None):
     """Build verify and push constructs the operator bundle, verifies it, and pushes it to an external app registry.
@@ -61,7 +63,7 @@ def build_verify_and_push(namespace, repository, revision, token, source_dir=Non
     :param source_dir: Path to local directory of yaml files to be read
     :param yamls: List of yaml strings to create bundle with
     """
-    
+
     bundle = build_and_verify(source_dir, yamls)
 
     if bundle is not None:
@@ -75,16 +77,17 @@ def build_verify_and_push(namespace, repository, revision, token, source_dir=Non
         logger.error("Bundle is invalid. Will not attempt to push.")
         raise ValueError("Resulting bundle is invalid, input yaml is improperly defined.")
 
+
 def nest(source_dir, registry_dir):
     """Nest takes a flat bundle directory and version nests it to eventually be consumed as part of an operator-registry image build.
 
     :param source_dir: Path to local directory of yaml files to be read
     :param output_dir: Path of your directory to be populated. If directory does not exist, it will be created.
     """
-    
+
     yaml_files = []
 
-    if source_dir is not None: 
+    if source_dir is not None:
         for filename in os.listdir(source_dir):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
                 with open(source_dir + "/" + filename) as f:

@@ -1,25 +1,29 @@
 import yaml
 from operatorcourier.build import BuildCmd
 
+
 class _literal(str): pass
+
 
 def _literal_presenter(dumper, data):
     return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
 
+
 def _get_empty_formatted_bundle():
     return dict(
-        data = dict(
-            customResourceDefinitions = '',
-            clusterServiceVersions = '',
-            packages = '',
+        data=dict(
+            customResourceDefinitions='',
+            clusterServiceVersions='',
+            packages='',
         )
     )
+
 
 def format_bundle(bundle):
     """
     Converts a bundle object into a push-ready bundle by changing list values of 'customResourceDefinitions', 'clusterServiceVersions', and 'packages' into stringified yaml literals.
     This format is required by the Marketplace backend.
-    
+
     :param bundle: A bundle object
     """
 
@@ -41,13 +45,13 @@ def format_bundle(bundle):
                     if 'annotations' in csv['metadata']:
                         if 'alm-examples' in csv['metadata']['annotations']:
                             csv['metadata']['annotations']['alm-examples'] = _literal(csv['metadata']['annotations']['alm-examples'])
-                
+
                 if 'spec' in csv:
                     if 'description' in csv['spec']:
                         csv['spec']['description'] = _literal(csv['spec']['description'])
-                
+
                 clusterServiceVersions.append(csv)
-            
+
             if len(clusterServiceVersions) > 0:
                 formattedBundle['data']['clusterServiceVersions'] = _literal(yaml.dump(clusterServiceVersions, default_flow_style=False))
 
@@ -56,6 +60,7 @@ def format_bundle(bundle):
                 formattedBundle['data']['packages'] = _literal(yaml.dump(bundle['data']['packages'], default_flow_style=False))
 
     return formattedBundle
+
 
 def unformat_bundle(formattedBundle):
     """
@@ -66,13 +71,13 @@ def unformat_bundle(formattedBundle):
     """
 
     bundle = BuildCmd()._get_empty_bundle()
- 
+
     if 'data' in formattedBundle:
         if 'customResourceDefinitions' in formattedBundle['data']:
             customResourceDefinitions = yaml.safe_load(formattedBundle['data']['customResourceDefinitions'])
             if customResourceDefinitions and len(customResourceDefinitions) > 0:
                 bundle['data']['customResourceDefinitions'] = customResourceDefinitions
-        
+
         if 'clusterServiceVersions' in formattedBundle['data']:
             clusterServiceVersions = yaml.safe_load(formattedBundle['data']['clusterServiceVersions'])
             if clusterServiceVersions and len(clusterServiceVersions) > 0:

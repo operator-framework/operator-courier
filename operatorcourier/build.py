@@ -1,16 +1,17 @@
 import yaml
 import operatorcourier.identify as identify
 
+
 class BuildCmd():
     def _get_empty_bundle(self):
          return dict(
-            data = dict(
-                customResourceDefinitions = [],
-                clusterServiceVersions = [],
-                packages = [],
+            data=dict(
+                customResourceDefinitions=[],
+                clusterServiceVersions=[],
+                packages=[],
             )
         )
-    
+
     def _get_field_entry(self, yamlContent):
         yaml_type = identify.get_operator_artifact_type(yamlContent)
         return yaml_type[0:1].lower() + yaml_type[1:] + 's'
@@ -25,7 +26,7 @@ class BuildCmd():
 
         :param strings: Array of yaml strings to bundle
         """
-        bundle =  self._get_empty_bundle()
+        bundle = self._get_empty_bundle()
         for item in strings:
             bundle = self._updateBundle(bundle, item)
 

@@ -8,6 +8,7 @@ from .const_io import general_required_fields, metadata_required_fields, metadat
 
 logger = logging.getLogger(__name__)
 
+
 class ValidateCmd():
     dataKey = "data"
     crdKey = "customResourceDefinitions"
@@ -17,7 +18,7 @@ class ValidateCmd():
     def __init__(self, ui_validate_io=False):
         self.ui_validate_io = ui_validate_io
         pass
-        
+
     def validate(self, bundle):
         """validate takes a bundle as a dictionary and returns a boolean value that
         describes if the bundle is valid. It also logs verification information when
@@ -39,7 +40,7 @@ class ValidateCmd():
 
         bundleData = bundle[self.dataKey]
 
-        validationDict[self.crdKey] = self._type_validation(bundleData, self.crdKey, self._crd_validation, False)  
+        validationDict[self.crdKey] = self._type_validation(bundleData, self.crdKey, self._crd_validation, False)
         validationDict[self.csvKey] = self._type_validation(bundleData, self.csvKey, self._csv_validation, True)
         validationDict[self.pkgsKey] = self._type_validation(bundleData, self.pkgsKey, self._pkgs_validation, True)
         if self.ui_validate_io:
@@ -49,7 +50,7 @@ class ValidateCmd():
         for key, value in validationDict.items():
             if value is False:
                 valid = False
-        
+
         return valid
 
     def _crd_validation(self, bundleData):
@@ -110,7 +111,7 @@ class ValidateCmd():
         valid = True
 
         warnSpecList = ["displayName", "description", "icon", "version", "provider", "maturity"]
-        
+
         for item in warnSpecList:
             if item not in spec:
                 logger.warning("csv spec.%s not defined" % item)
