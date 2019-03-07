@@ -22,7 +22,6 @@ def test_get_operator_artifact_type(fname, expected):
 def test_get_operator_artifact_type_assertions(fname):
     with open(fname) as f:
         yaml = f.read()
-
     with pytest.raises(ValueError) as e, LogCapture() as logs:
         identify.get_operator_artifact_type(yaml)
 
