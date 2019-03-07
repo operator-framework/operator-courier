@@ -4,7 +4,10 @@ from operatorcourier.format import unformat_bundle
 
 
 def test_valid_bundles():
-    bundles = ["tests/test_files/bundles/verification/valid.bundle.yaml", "tests/test_files/bundles/verification/nocrd.valid.bundle.yaml"]
+    bundles = [
+        "tests/test_files/bundles/verification/valid.bundle.yaml",
+        "tests/test_files/bundles/verification/nocrd.valid.bundle.yaml"
+    ]
     for bundle in bundles:
         with open(bundle) as f:
             bundle = yaml.safe_load(f)

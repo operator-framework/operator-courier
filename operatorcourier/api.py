@@ -1,7 +1,8 @@
 """
 operatorcourier.api module
 
-This module implements the api that should be imported when using the operator-courier package
+This module implements the api that should be imported
+when using the operator-courier package
 """
 
 import os
@@ -19,7 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
-    """Build and verify constructs an operator bundle from a set of files and then verifies it for usefulness and accuracy.
+    """Build and verify constructs an operator bundle from
+    a set of files and then verifies it for usefulness and accuracy.
+
     It returns the bundle as a string.
 
     :param source_dir: Path to local directory of yaml files to be read.
@@ -28,7 +31,8 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
 
     if source_dir is not None and yamls is not None:
         logger.error("Both source_dir and yamls cannot be defined.")
-        raise TypeError("Both source_dir and yamls cannot be specified on function call.")
+        raise TypeError(
+            "Both source_dir and yamls cannot be specified on function call.")
 
     yaml_files = []
 
@@ -53,11 +57,15 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
     return bundle
 
 
-def build_verify_and_push(namespace, repository, revision, token, source_dir=None, yamls=None):
-    """Build verify and push constructs the operator bundle, verifies it, and pushes it to an external app registry.
-    Currently the only supported app registry is the one located at Quay.io (https://quay.io/cnr/api/v1/packages/)
+def build_verify_and_push(namespace, repository, revision, token,
+                          source_dir=None, yamls=None):
+    """Build verify and push constructs the operator bundle,
+    verifies it, and pushes it to an external app registry.
+    Currently the only supported app registry is the one
+    located at Quay.io (https://quay.io/cnr/api/v1/packages/)
 
-    :param namespace: Quay namespace where the repository we are pushing the bundle is located.
+    :param namespace: Quay namespace where the repository we are
+                      pushing the bundle is located.
     :param repository: Application repository name the application is bundled for.
     :param revision: Release version of the bundle.
     :param source_dir: Path to local directory of yaml files to be read
@@ -75,14 +83,17 @@ def build_verify_and_push(namespace, repository, revision, token, source_dir=Non
             PushCmd().push(temp_dir, namespace, repository, revision, token)
     else:
         logger.error("Bundle is invalid. Will not attempt to push.")
-        raise ValueError("Resulting bundle is invalid, input yaml is improperly defined.")
+        raise ValueError(
+            "Resulting bundle is invalid, input yaml is improperly defined.")
 
 
 def nest(source_dir, registry_dir):
-    """Nest takes a flat bundle directory and version nests it to eventually be consumed as part of an operator-registry image build.
+    """Nest takes a flat bundle directory and version nests it
+    to eventually be consumed as part of an operator-registry image build.
 
     :param source_dir: Path to local directory of yaml files to be read
-    :param output_dir: Path of your directory to be populated. If directory does not exist, it will be created.
+    :param output_dir: Path of your directory to be populated.
+                       If directory does not exist, it will be created.
     """
 
     yaml_files = []

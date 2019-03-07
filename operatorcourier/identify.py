@@ -7,8 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_operator_artifact_type(operatorArtifactString):
-    """get_operator_artifact_type takes a yaml string and determines if it is one of the
-    expected bundle types: ClusterServiceVersion, CustomResourceDefinition, or Package.
+    """get_operator_artifact_type takes a yaml string and determines if it is
+    one of the expected bundle types: ClusterServiceVersion,
+    CustomResourceDefinition, or Package.
 
     :param operatorArtifactString: Yaml string to type check
     """
@@ -24,10 +25,10 @@ def get_operator_artifact_type(operatorArtifactString):
             if "packageName" in operatorArtifact:
                 artifact_type = "Package"
                 artifact_name = operatorArtifact['packageName']
-            elif "kind" in operatorArtifact:
-                if operatorArtifact["kind"] in ("ClusterServiceVersion", "CustomResourceDefinition"):
-                    artifact_type = operatorArtifact["kind"]
-                    artifact_name = operatorArtifact['metadata']['name']
+            elif operatorArtifact.get("kind") in ("ClusterServiceVersion",
+                                                  "CustomResourceDefinition"):
+                artifact_type = operatorArtifact["kind"]
+                artifact_name = operatorArtifact['metadata']['name']
             if artifact_type is not None:
                 logger.info('Parsed %s: %s', artifact_type, artifact_name)
                 return artifact_type

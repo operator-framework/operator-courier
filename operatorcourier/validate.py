@@ -40,11 +40,15 @@ class ValidateCmd():
 
         bundleData = bundle[self.dataKey]
 
-        validationDict[self.crdKey] = self._type_validation(bundleData, self.crdKey, self._crd_validation, False)
-        validationDict[self.csvKey] = self._type_validation(bundleData, self.csvKey, self._csv_validation, True)
-        validationDict[self.pkgsKey] = self._type_validation(bundleData, self.pkgsKey, self._pkgs_validation, True)
+        validationDict[self.crdKey] = self._type_validation(bundleData, self.crdKey,
+                                                            self._crd_validation, False)
+        validationDict[self.csvKey] = self._type_validation(bundleData, self.csvKey,
+                                                            self._csv_validation, True)
+        validationDict[self.pkgsKey] = self._type_validation(bundleData, self.pkgsKey,
+                                                             self._pkgs_validation, True)
         if self.ui_validate_io:
-            validationDict[self.csvKey] &= self._type_validation(bundleData, self.csvKey, self._ui_validation_io, True)
+            validationDict[self.csvKey] &= self._type_validation(
+                bundleData, self.csvKey, self._ui_validation_io, True)
 
         valid = True
         for key, value in validationDict.items():
@@ -110,7 +114,8 @@ class ValidateCmd():
     def _csv_spec_validation(self, spec, bundleData):
         valid = True
 
-        warnSpecList = ["displayName", "description", "icon", "version", "provider", "maturity"]
+        warnSpecList = ["displayName", "description", "icon",
+                        "version", "provider", "maturity"]
 
         for item in warnSpecList:
             if item not in spec:
@@ -141,11 +146,13 @@ class ValidateCmd():
             else:
                 for crd in customresourcedefinitions["owned"]:
                     if "name" not in crd:
-                        logger.error("name not defined for item in spec.customresourcedefinitions.")
+                        logger.error("name not defined for item in "
+                                     "spec.customresourcedefinitions.")
                         valid = False
                     else:
                         if crd["name"] not in crdList:
-                            logger.error("custom resource definition referenced in csv not defined in root list of crds")
+                            logger.error("custom resource definition referenced "
+                                         "in csv not defined in root list of crds")
 
         return valid
 
@@ -161,7 +168,8 @@ class ValidateCmd():
         if "annotations" in metadata:
             annotations = metadata["annotations"]
 
-            annotationList = ["categories", "description", "containerImage", "createdAt", "support"]
+            annotationList = ["categories", "description",
+                              "containerImage", "createdAt", "support"]
 
             for item in annotationList:
                 if item not in annotations:
@@ -181,7 +189,8 @@ class ValidateCmd():
                 try:
                     json.loads(annotations["alm-examples"])
                 except KeyError:
-                    logger.error("metadata.annotations.alm-examples contains invalid json string")
+                    logger.error("metadata.annotations.alm-examples contains "
+                                 "invalid json string")
                     valid = False
 
         else:
@@ -224,7 +233,9 @@ class ValidateCmd():
                             logger.error("package channel.currentCSV not defined.")
                         else:
                             if channel["currentCSV"] not in csvNames:
-                                logger.error("channel.currentCSV %s is not included in list of csvs", channel["currentCSV"])
+                                logger.error("channel.currentCSV %s is not "
+                                             "included in list of csvs",
+                                             channel["currentCSV"])
                                 valid = False
 
             else:
@@ -257,7 +268,7 @@ class ValidateCmd():
             if self._ui_csv_fields_exist_validation_io(csv) is False:
                 logger.error("UI validation failed to verify required fields for operatorhub.io exist.")
                 valid = False
-            
+
             if valid:
                 if self._ui_csv_fields_format_validation_io(csv) is False:
                     logger.error("UI validation failed to verify that required fields for operatorhub.io are properly formatted.")
@@ -283,7 +294,7 @@ class ValidateCmd():
                         logger.error("csv %s not defined.", field)
                         valid = False
                         return valid
-                
+
                 for field in metadata_required_fields:
                     if field["field"] not in csv["metadata"]:
                         if field["required"]:
@@ -292,7 +303,7 @@ class ValidateCmd():
                             return valid
                         else:
                             logger.warning("csv metadata.%s not defined. %s", field["field"], field["description"])
-                
+
                 for field in metadata_annotations_required_fields:
                     if field["field"] not in csv["metadata"]["annotations"]:
                         if field["required"]:
@@ -310,7 +321,7 @@ class ValidateCmd():
                             logger.warning("csv spec.%s not defined. %s", field["field"], field["description"])
 
         return valid
-    
+
     def _ui_csv_fields_format_validation_io(self, csv):
 
         def is_url(field):
@@ -349,7 +360,7 @@ class ValidateCmd():
         spec = csv["spec"]
         provider = spec["provider"]
         annotations = csv["metadata"]["annotations"]
-        
+
         # alm-examples check based on crd field
         if "customresourcedefinitions" in spec:
             if "owned" in spec["customresourcedefinitions"]:
@@ -363,7 +374,7 @@ class ValidateCmd():
                 else:
                     logger.error("You should have alm-examples for every owned CRD")
                     valid = False
-        
+
         # provider check
         if isinstance(provider, (dict,)):
             if len(provider) != 1:
@@ -376,7 +387,7 @@ class ValidateCmd():
         else:
             logger.error("csv.spec.provider should contain a \"name\" field.")
             valid = False
-        
+
         # maintainers check
         if isinstance(spec["maintainers"], (list,)):
             for maintainer in spec["maintainers"]:
