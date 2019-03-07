@@ -1,6 +1,8 @@
 import argparse
+import pkg_resources
 import sys
 from operatorcourier import api
+
 
 def main():
     """Generate the CLI bits
@@ -30,7 +32,14 @@ These are the commands you can use:
     push        Create a bundle, test it, and push it to an app registry.
     nest        Take a flat to-be-bundled directory and version nest it.
 ''')
+        try:
+            __version__ = pkg_resources.get_distribution('operator-courier').version
+        except Exception:
+            __version__ = 'unknown'
+
         parser.add_argument('command', help='Subcommand to run')
+        parser.add_argument('-v', '--version', help='Show the current version of operator-courier',
+                            action='version', version=__version__)
 
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
