@@ -1,4 +1,3 @@
-import pytest
 import yaml
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.format import unformat_bundle

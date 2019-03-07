@@ -1,6 +1,4 @@
 import os
-import pytest
-import yaml
 from filecmp import dircmp
 from tempfile import TemporaryDirectory
 from operatorcourier.nest import nest_bundles

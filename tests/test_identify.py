@@ -1,4 +1,3 @@
-from unittest import TestCase
 import pytest
 import operatorcourier.identify as identify
 from testfixtures import LogCapture
