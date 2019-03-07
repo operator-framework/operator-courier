@@ -4,13 +4,47 @@ data:
       kind: ClusterServiceVersion
       metadata:
         annotations:
-          alm-examples: '[{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdCluster","metadata":{"name":"example","namespace":"default"},"spec":{"size":3,"version":"3.2.13"}},{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdRestore","metadata":{"name":"example-etcd-cluster"},"spec":{"etcdCluster":{"name":"example-etcd-cluster"},"backupStorageType":"S3","s3":{"path":"<full-s3-path>","awsSecret":"<aws-secret>"}}},{"apiVersion":"etcd.database.coreos.com/v1beta2","kind":"EtcdBackup","metadata":{"name":"example-etcd-cluster-backup"},"spec":{"etcdEndpoints":["<etcd-cluster-endpoints>"],"storageType":"S3","s3":{"path":"<full-s3-path>","awsSecret":"<aws-secret>"}}}]'
+          alm-examples: |-
+            [
+              {
+                "apiVersion": "marketplace.redhat.com/v1alpha1",
+                "kind": "CatalogSourceConfig",
+                "metadata":
+                  {
+                    "name": "installed-upstream-community-operators",
+                    "namespace": "marketplace"
+                  },
+                "spec":
+                  {
+                    "targetNamespace": "local-operators",
+                    "packages": "jaeger"
+                  }
+              },
+              {
+                "apiVersion": "marketplace.redhat.com/v1alpha1",
+                "kind": "OperatorSource",
+                "metadata":
+                  {
+                    "name": "community-operators",
+                    "namespace": "marketplace"
+                  },
+                  "spec":
+                    {
+                      "type": "appregistry",
+                      "endpoint": "https://quay.io/cnr",
+                      "registryNamespace": "community-operators",
+                      "displayName": "Community Operators",
+                      "publisher": "Red Hat"
+                    }
+                }
+              
+            ]
           categories: openshift required
           certified: 'true'
           containerImage: quay.io/openshift/origin-operator-marketplace:latest
           createdAt: 2019/11/15
           description: An operator to run the OpenShift marketplace
-          healthIndex: B
+          capabilities: Basic Install
           repository: https://github.com/operator-framework/operator-marketplace
           support: Red Hat
         name: marketplace-operator.v0.0.1

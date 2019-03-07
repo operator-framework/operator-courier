@@ -17,7 +17,7 @@ from operatorcourier.nest import nest_bundles
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
-def build_and_verify(source_dir=None, yamls=None):
+def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
     """Build and verify constructs an operator bundle from a set of files and then verifies it for usefulness and accuracy.
     It returns the bundle as a string.
 
@@ -41,7 +41,7 @@ def build_and_verify(source_dir=None, yamls=None):
 
     bundle = BuildCmd().build_bundle(yaml_files)
 
-    valid = ValidateCmd().validate(bundle)
+    valid = ValidateCmd(ui_validate_io).validate(bundle)
 
     if not valid:
         bundle = None

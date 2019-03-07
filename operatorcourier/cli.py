@@ -42,9 +42,10 @@ These are the commands you can use:
     def verify(self):
         parser = argparse.ArgumentParser(description='Build and verify an operator bundle to test')
         parser.add_argument('source_dir', help='Path of your directory of yaml files to bundle. Either set this or use the files argument for bundle data.')
-        
-        args, leftovers = parser.parse_known_args(sys.argv[2:])        
-        api.build_and_verify(source_dir=args.source_dir)
+        parser.add_argument('--ui_validate_io', help='Validate bundle for operatorhub.io UI', action='store_true')
+
+        args, leftovers = parser.parse_known_args(sys.argv[2:])       
+        api.build_and_verify(source_dir=args.source_dir, ui_validate_io=args.ui_validate_io)
     
     # Parse the push command
     def push(self):
