@@ -6,7 +6,7 @@ with open('README.md', 'r') as f:
 setup(
   name='operator-courier',
   packages=['operatorcourier'],
-  version='1.0.3',
+  version='1.1.0',
   description='Build, verify and push operators',
   author='AOS Marketplace',
   author_email='aos-marketplace@redhat.com',
