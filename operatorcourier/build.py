@@ -4,7 +4,7 @@ import operatorcourier.identify as identify
 
 class BuildCmd():
     def _get_empty_bundle(self):
-         return dict(
+        return dict(
             data=dict(
                 customResourceDefinitions=[],
                 clusterServiceVersions=[],
