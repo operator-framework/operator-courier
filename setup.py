@@ -5,7 +5,8 @@ with open('README.md', 'r') as f:
 
 tests_require = [
   'pytest',
-  'pytest-cov'
+  'pytest-cov',
+  'testfixtures',
 ]
 
 setup(
