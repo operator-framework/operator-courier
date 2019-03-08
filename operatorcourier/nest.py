@@ -6,6 +6,7 @@ import operatorcourier.identify as identify
 
 logger = logging.getLogger(__name__)
 
+
 def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
     package = {}
     crds = {}
@@ -41,7 +42,8 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
         yaml.dump(package, outfile, default_flow_style=False)
         outfile.flush()
 
-    # now lets create a subdirectory for each version of the csv, and add all the relevant crds to it
+    # now lets create a subdirectory for each version of the csv,
+    # and add all the relevant crds to it
     for csv in csvs:
         csv_name = csv["metadata"]["name"]
         version = csv["spec"]["version"]
@@ -50,7 +52,8 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
         if not os.path.exists(csv_folder):
             os.makedirs(csv_folder)
 
-        with open('%s/%s.clusterserviceversion.yaml' % (csv_folder, csv_name), 'w') as outfile:
+        csv_path = '%s/%s.clusterserviceversion.yaml' % (csv_folder, csv_name)
+        with open(csv_path, 'w') as outfile:
             yaml.dump(csv, outfile, default_flow_style=False)
             outfile.flush()
 
@@ -63,7 +66,8 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
                     yaml.dump(crd, outfile, default_flow_style=False)
                     outfile.flush()
             else:
-                errors.append("CRD %s mentioned in CSV %s was not found in directory." % (crd_name, csv_name))
+                errors.append("CRD %s mentioned in CSV %s was not found in directory."
+                              % (crd_name, csv_name))
 
     # if no errors were encountered, lets create the real directory and populate it.
     if len(errors) == 0:

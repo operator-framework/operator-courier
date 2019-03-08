@@ -1,4 +1,3 @@
-from unittest import TestCase
 import pytest
 import operatorcourier.identify as identify
 from testfixtures import LogCapture
@@ -16,8 +15,8 @@ def test_get_operator_artifact_type(fname, expected):
 
 
 @pytest.mark.parametrize('fname', [
-    "tests/test_files/invalid.yaml",
-    "tests/test_files/empty.yaml",
+    ("tests/test_files/invalid.yaml"),
+    ("tests/test_files/empty.yaml"),
 ])
 def test_get_operator_artifact_type_assertions(fname):
     with open(fname) as f:
@@ -25,9 +24,9 @@ def test_get_operator_artifact_type_assertions(fname):
     with pytest.raises(ValueError) as e, LogCapture() as logs:
         identify.get_operator_artifact_type(yaml)
 
-    logs.check(
-        ('operatorcourier.identify', 'ERROR', 'Courier requires valid CSV, CRD, and Package files'),
-    )
+    logs.check(('operatorcourier.identify',
+                'ERROR',
+                'Courier requires valid CSV, CRD, and Package files'),)
     assert 'Courier requires valid CSV, CRD, and Package files' == str(e.value)
 
 
@@ -42,7 +41,7 @@ def test_get_operator_artifact_type_with_invalid_yaml(fname):
     with pytest.raises(ValueError) as e, LogCapture() as logs:
         identify.get_operator_artifact_type(yaml)
 
-    logs.check(
-        ('operatorcourier.identify', 'ERROR', 'Courier requires valid input YAML files'),
-    )
+    logs.check(('operatorcourier.identify',
+                'ERROR',
+                'Courier requires valid input YAML files'),)
     assert 'Courier requires valid input YAML files' == str(e.value)
