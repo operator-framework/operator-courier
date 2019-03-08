@@ -1,5 +1,6 @@
 # Contributing to operator-courier
-The following is a set of best practices for contributiong to the operator-courier project. For any questions or concerns please reach out to the AOS-Marketplace team: <aos-marketplace@redhat.com>
+The following is a set of best practices for contributing to the operator-courier project. For any questions or concerns please reach out to the AOS-Marketplace team: <aos-marketplace@redhat.com>
+
 
 ## Development Environment Setup
 This project uses [pipenv](https://github.com/pypa/pipenv) to manage dependencies and create virtual environments for development environment.
@@ -19,6 +20,40 @@ To test the package locally, we need to install dependent pip packages in a way 
 `pipenv shell`
 
 Inside this environment all of the dependent packages are installed without polluting the local environment. For more detailed info, take a look at their (pipenv's) [starter documentation](https://pipenv.readthedocs.io/en/latest/).
+
+
+## Coding style
+
+Changes submitted to this project should follow
+[PEP8](https://www.python.org/dev/peps/pep-0008/) recommendations.
+
+We use [flake8](http://flake8.pycqa.org/en/latest/), a wrapper around
+PyFlakes, PyCodeStyle and McCabe, for checking coding style. You might want to
+read the documentation on the [error
+codes](http://flake8.pycqa.org/en/latest/user/error-codes.html), and check the
+project specific configuration found in the `[flake8]` section of `tox.ini`.
+
+As `flake8` is part of the default tox envlist, code style is checked whenever
+`tox` is run.
+
+
+## Tests and coverage
+
+This project uses [tox](https://tox.readthedocs.io) for running the tests, in
+order to ensure the consistency of the test environments, and make testing
+with multiple Python versions (3.6 and 3.7) easier.
+
+After changes in `tox.ini` or major changes in the working tree (after
+switching branches or pulling from others), it is recommended to use the
+`--recreate` option when running `tox`, to ensure that the test environments
+are up to date.
+
+Coverage is measured using [pytest-cov](https://pypi.org/project/pytest-cov/),
+and it's configured to fail the tests in case the coverage drops bellow a
+certain level. This is intended to ensure that all code changes submitted to
+this project are appropriately unit tested. For the current value, see the
+`[coverage:report]` section in `tox.ini`.
+
 
 ## Release, Deploy, and Clean the Project
 

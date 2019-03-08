@@ -80,3 +80,5 @@ $ tox
 
 This will run the tests with several versions of Python 3, measure coverage,
 and run flake8 for code linting.
+
+For further details, please see the [contribution guide](docs/contributing.md).
