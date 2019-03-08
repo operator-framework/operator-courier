@@ -70,7 +70,7 @@ class ValidateCmd():
         for crd in crds:
             if "metadata" in crd:
                 if "name" in crd["metadata"]:
-                    logger.info("Evaluating crd %s", crd["metadata"]["name"])
+                    logger.info("Evaluating crd {}".format(crd["metadata"]["name"]))
                 else:
                     logger.error("crd metadata.name not defined.")
                     valid = False
@@ -123,7 +123,7 @@ class ValidateCmd():
 
         for item in warnSpecList:
             if item not in spec:
-                logger.warning("csv spec.%s not defined" % item)
+                logger.warning("csv spec.{} not defined".format(item))
 
         if "installModes" not in spec:
             logger.error("csv spec.installModes not defined")
@@ -164,7 +164,7 @@ class ValidateCmd():
         valid = True
 
         if "name" in metadata:
-            logger.info("Evaluating csv %s", metadata["name"])
+            logger.info("Evaluating csv {}".format(metadata["name"]))
         else:
             logger.error("csv metadata.name not defined.")
             valid = False
@@ -177,7 +177,7 @@ class ValidateCmd():
 
             for item in annotationList:
                 if item not in annotations:
-                    logger.warning("csv metadata.annotations.%s not defined" % item)
+                    logger.warning("csv metadata.annotations.{} not defined".format(item))
 
             # check certified value's type in particular. should be string, not bool
             if "certified" not in annotations:
@@ -210,7 +210,7 @@ class ValidateCmd():
 
         for pkg in pkgs:
             if "packageName" in pkg:
-                logger.info("Evaluating package %s", pkg["packageName"])
+                logger.info("Evaluating package {}".format(pkg["packageName"]))
             else:
                 logger.error("packageName not defined.")
                 valid = False
@@ -237,9 +237,7 @@ class ValidateCmd():
                             logger.error("package channel.currentCSV not defined.")
                         else:
                             if channel["currentCSV"] not in csvNames:
-                                logger.error("channel.currentCSV %s is not "
-                                             "included in list of csvs",
-                                             channel["currentCSV"])
+                                logger.error("channel.currentCSV {} is not included in list of csvs".format(channel["currentCSV"]))
                                 valid = False
 
             else:
@@ -254,10 +252,10 @@ class ValidateCmd():
             if len(bundleData[typeName]) != 0:
                 valid = validator(bundleData)
             elif required:
-                logger.error("Bundle does not contain any %s." % typeName)
+                logger.error("Bundle does not contain any {}.".format(typeName))
                 valid = False
         elif required:
-            logger.error("Bundle does not contain any %s." % typeName)
+            logger.error("Bundle does not contain any {}.".format(typeName))
             valid = False
 
         return valid
@@ -293,44 +291,38 @@ class ValidateCmd():
                 logger.error("csv metadata.name not defined.")
                 valid = False
             else:
-                logger.info("Evaluating csv %s", csv["metadata"]["name"])
+                logger.info("Evaluating csv {}".format(csv["metadata"]["name"]))
 
                 for field in general_required_fields:
                     if field not in csv:
-                        logger.error("csv %s not defined.", field)
+                        logger.error("csv {} not defined.".format(field))
                         valid = False
                         return valid
 
                 for field in metadata_required_fields:
                     if field["field"] not in csv["metadata"]:
                         if field["required"]:
-                            logger.error("csv metadata.%s not defined. %s",
-                                         field["field"], field["description"])
+                            logger.error("csv metadata.{} not defined. {}".format(field["field"], field["description"]))
                             valid = False
                             return valid
                         else:
-                            logger.warning("csv metadata.%s not defined. %s",
-                                           field["field"], field["description"])
+                            logger.warning("csv metadata.{} not defined. {}".format(field["field"], field["description"]))
 
                 for field in metadata_annotations_required_fields:
                     if field["field"] not in csv["metadata"]["annotations"]:
                         if field["required"]:
-                            logger.error("csv metadata.annotations.%s not defined. %s",
-                                         field["field"], field["description"])
+                            logger.error("csv metadata.annotations.{} not defined. {}".format(field["field"], field["description"]))
                             valid = False
                         else:
-                            logger.warning("csv metadata.annotations.%s not defined. %s",
-                                           field["field"], field["description"])
+                            logger.warning("csv metadata.annotations.{} not defined. {}".format(field["field"], field["description"]))
 
                 for field in spec_required_fields:
                     if field["field"] not in csv["spec"]:
                         if field["required"]:
-                            logger.error("csv spec.%s not defined. %s",
-                                         field["field"], field["description"])
+                            logger.error("csv spec.{} not defined. {}".format(field["field"], field["description"]))
                             valid = False
                         else:
-                            logger.warning("csv spec.%s not defined. %s",
-                                           field["field"], field["description"])
+                            logger.warning("csv spec.{} not defined. {}".format(field["field"], field["description"]))
 
         return valid
 
@@ -381,9 +373,7 @@ class ValidateCmd():
                     alm_kinds = get_alm_kinds(json.loads(annotations["alm-examples"]))
                     for crd in crds:
                         if crd["kind"] not in alm_kinds:
-                            logger.error("%s CRD does not have an entry in "
-                                         "alm-examples - please add such an "
-                                         "example CR.", crd["kind"])
+                            logger.error("{} CRD does not have an entry in alm-examples - please add such an example CR.".format(crd["kind"]))
                             valid = False
                 else:
                     logger.error("You should have alm-examples for every owned CRD")
@@ -412,7 +402,7 @@ class ValidateCmd():
                     valid = False
                 else:
                     if not is_email(maintainer["email"]):
-                        logger.error("%s is not a valid email", maintainer["email"])
+                        logger.error("{} is not a valid email".format(maintainer["email"]))
                         valid = False
         else:
             logger.error("csv.spec.maintainers must be a list of name & email pairs.")
@@ -427,7 +417,7 @@ class ValidateCmd():
                     valid = False
                 else:
                     if not is_url(link["url"]):
-                        logger.error("%s is not a valid url", link["url"])
+                        logger.error("{} is not a valid url".format(link["url"]))
                         valid = False
         else:
             logger.error("csv.spec.links must be a list of name & url pairs.")
@@ -435,15 +425,12 @@ class ValidateCmd():
 
         # version check
         if not is_version(spec["version"]):
-            logger.error("spec.version %s is not a valid version "
-                         "(example of a valid version is: v1.0.12)",
-                         spec["version"])
+            logger.error("spec.version {} is not a valid version (example of a valid version is: v1.0.12)".format(spec["version"]))
             valid = False
 
         # capabilities check
         if not is_capability_level(annotations["capabilities"]):
-            logger.error("metadata.annotations.capabilities %s is not a "
-                         "valid capabilities level", annotations["capability"])
+            logger.error("metadata.annotations.capabilities {} is not a valid capabilities level".format(annotations["capability"]))
             valid = False
 
         return valid

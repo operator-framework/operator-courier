@@ -76,7 +76,7 @@ def build_verify_and_push(namespace, repository, revision, token,
 
     if bundle is not None:
         with TemporaryDirectory() as temp_dir:
-            with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
+            with open('{}/bundle.yaml'.format(temp_dir), 'w') as outfile:
                 yaml.dump(bundle, outfile, default_flow_style=False)
                 outfile.flush()
 

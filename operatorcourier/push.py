@@ -28,7 +28,7 @@ class PushCmd():
 
     def _create_base64_bundle(self, bundle_dir, repository):
         with TemporaryDirectory() as temp_dir:
-            tarfile_name = "%s/%s.tar.gz" % (temp_dir, repository)
+            tarfile_name = "{}/{}.tar.gz".format(temp_dir, repository)
             with tarfile.open(tarfile_name, "w:gz") as tar:
                 tar.add(bundle_dir, "")
             with open(tarfile_name, "rb") as tarball:
@@ -37,8 +37,8 @@ class PushCmd():
             return result64
 
     def _push_to_registry(self, namespace, repository, release, bundle, auth_token):
-        push_uri = 'https://quay.io/cnr/api/v1/packages/%s/%s' % (namespace, repository)
-        logger.info('Pushing bundle to %s' % push_uri)
+        push_uri = 'https://quay.io/cnr/api/v1/packages/{}/{}'.format(namespace, repository)
+        logger.info('Pushing bundle to {}'.format(push_uri))
         headers = {'Content-Type': 'application/json', 'Authorization': auth_token}
         json = {'blob': bundle, 'release': release, "media_type": "helm"}
         r = requests.post(push_uri, json=json, headers=headers)

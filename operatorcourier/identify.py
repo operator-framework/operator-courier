@@ -29,7 +29,7 @@ def get_operator_artifact_type(operatorArtifactString):
                 artifact_type = operatorArtifact["kind"]
                 artifact_name = operatorArtifact['metadata']['name']
             if artifact_type is not None:
-                logger.info('Parsed %s: %s', artifact_type, artifact_name)
+                logger.info('Parsed {}: {}'.format(artifact_type, artifact_name))
                 return artifact_type
 
         msg = 'Courier requires valid CSV, CRD, and Package files'

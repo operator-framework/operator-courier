@@ -38,7 +38,7 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
 
     # write the package file
     package_name = package["packageName"]
-    with open('%s/%s.package.yaml' % (temp_registry_dir, package_name), 'w') as outfile:
+    with open('{}/{}.package.yaml'.format(temp_registry_dir, package_name), 'w') as outfile:
         yaml.dump(package, outfile, default_flow_style=False)
         outfile.flush()
 
@@ -52,7 +52,7 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
         if not os.path.exists(csv_folder):
             os.makedirs(csv_folder)
 
-        csv_path = '%s/%s.clusterserviceversion.yaml' % (csv_folder, csv_name)
+        csv_path = '{}/{}.clusterserviceversion.yaml'.format(csv_folder, csv_name)
         with open(csv_path, 'w') as outfile:
             yaml.dump(csv, outfile, default_flow_style=False)
             outfile.flush()
@@ -62,12 +62,11 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
             crd_name = csv_crd["name"]
             if crd_name in crds:
                 crd = crds[crd_name]
-                with open('%s/%s.crd.yaml' % (csv_folder, crd_name), 'w') as outfile:
+                with open('{}/{}.crd.yaml'.format(csv_folder, crd_name), 'w') as outfile:
                     yaml.dump(crd, outfile, default_flow_style=False)
                     outfile.flush()
             else:
-                errors.append("CRD %s mentioned in CSV %s was not found in directory."
-                              % (crd_name, csv_name))
+                errors.append("CRD {} mentioned in CSV {} was not found in directory.".format(crd_name, csv_name))
 
     # if no errors were encountered, lets create the real directory and populate it.
     if len(errors) == 0:
