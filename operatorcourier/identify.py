@@ -5,7 +5,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 def get_operator_artifact_type(operatorArtifactString):
     """get_operator_artifact_type takes a yaml string and determines if it is
     one of the expected bundle types: ClusterServiceVersion,

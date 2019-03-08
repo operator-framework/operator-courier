@@ -53,7 +53,8 @@ These are the commands you can use:
                             action='store_true')
 
         args, leftovers = parser.parse_known_args(sys.argv[2:])
-        api.build_and_verify(source_dir=args.source_dir, ui_validate_io=args.ui_validate_io)
+        api.build_and_verify(source_dir=args.source_dir,
+                             ui_validate_io=args.ui_validate_io)
 
     # Parse the push command
     def push(self):
