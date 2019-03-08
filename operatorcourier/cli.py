@@ -51,10 +51,13 @@ These are the commands you can use:
         parser.add_argument('--ui_validate_io',
                             help='Validate bundle for operatorhub.io UI',
                             action='store_true')
-
+        parser.add_argument('--validation-output', dest='validation_output',
+                            help='A file to write validation warnings and errors to'
+                                 'in JSON format')
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.build_and_verify(source_dir=args.source_dir,
-                             ui_validate_io=args.ui_validate_io)
+                             ui_validate_io=args.ui_validate_io,
+                             validation_output=args.validation_output)
 
     # Parse the push command
     def push(self):
@@ -71,13 +74,16 @@ These are the commands you can use:
         parser.add_argument('release',
                             help='The release version of the bundle.')
         parser.add_argument('token', help='Authorization token for Quay api.')
-
+        parser.add_argument('--validation-output', dest='validation_output',
+                            help='A file to write validation warnings and errors to'
+                                 'in JSON format')
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.build_verify_and_push(args.namespace,
                                   args.repository,
                                   args.release,
                                   args.token,
-                                  source_dir=args.source_dir)
+                                  source_dir=args.source_dir,
+                                  validation_output=args.validation_output)
 
     # Parse the nest command
     def nest(self):

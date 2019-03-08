@@ -9,6 +9,7 @@ import os
 import logging
 from tempfile import TemporaryDirectory
 import yaml
+import json
 from operatorcourier.build import BuildCmd
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
@@ -19,7 +20,8 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
+def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
+                     validation_output=None):
     """Build and verify constructs an operator bundle from
     a set of files and then verifies it for usefulness and accuracy.
 
@@ -46,7 +48,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
 
     bundle = BuildCmd().build_bundle(yaml_files)
 
-    valid = ValidateCmd(ui_validate_io).validate(bundle)
+    valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle)
 
     if not valid:
         bundle = None
@@ -54,11 +56,15 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
     else:
         bundle = format_bundle(bundle)
 
+    if validation_output is not None:
+        with open(validation_output, 'w') as f:
+            f.write(json.dumps(validation_results_dict) + "\n")
     return bundle
 
 
 def build_verify_and_push(namespace, repository, revision, token,
-                          source_dir=None, yamls=None):
+                          source_dir=None, yamls=None,
+                          validation_output=None):
     """Build verify and push constructs the operator bundle,
     verifies it, and pushes it to an external app registry.
     Currently the only supported app registry is the one
@@ -72,7 +78,7 @@ def build_verify_and_push(namespace, repository, revision, token,
     :param yamls: List of yaml strings to create bundle with
     """
 
-    bundle = build_and_verify(source_dir, yamls)
+    bundle = build_and_verify(source_dir, yamls, validation_output=validation_output)
 
     if bundle is not None:
         with TemporaryDirectory() as temp_dir:
