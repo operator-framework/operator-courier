@@ -1,0 +1,17 @@
+sudo: false
+language: python
+matrix:
+  include:
+    - dist: trusty
+      python: "3.6"
+      env: TOXENV=py36
+      after_success: coveralls
+    - dist: xenial
+      python: "3.7"
+      env: TOXENV=py37
+      after_success: coveralls
+    - dist: xenial
+      python: "3.7"
+      env: TOXENV=flake8
+install: pip install tox-travis coveralls
+script: tox
