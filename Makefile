@@ -2,7 +2,7 @@ release:
 	python setup.py sdist bdist_wheel
 
 deploy:
-	python -m twine upload --repository-url https://pypi.org/ dist/*
+	twine upload dist/*
 
 clean:
 	rm -rf operator_courier.egg-info
