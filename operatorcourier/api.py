@@ -51,6 +51,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False):
     if not valid:
         bundle = None
         logger.error("Bundle failed validation.")
+        raise ValueError("Resulting bundle is invalid, input yaml is improperly defined.")
     else:
         bundle = format_bundle(bundle)
 
@@ -74,17 +75,14 @@ def build_verify_and_push(namespace, repository, revision, token,
 
     bundle = build_and_verify(source_dir, yamls)
 
-    if bundle is not None:
-        with TemporaryDirectory() as temp_dir:
-            with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
-                yaml.dump(bundle, outfile, default_flow_style=False)
-                outfile.flush()
+    bundle = build_and_verify(source_dir, yamls)
+    
+    with TemporaryDirectory() as temp_dir:
+        with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
+            yaml.dump(bundle, outfile, default_flow_style=False)
+            outfile.flush()
 
-            PushCmd().push(temp_dir, namespace, repository, revision, token)
-    else:
-        logger.error("Bundle is invalid. Will not attempt to push.")
-        raise ValueError(
-            "Resulting bundle is invalid, input yaml is improperly defined.")
+        PushCmd().push(temp_dir, namespace, repository, revision, token)
 
 
 def nest(source_dir, registry_dir):
