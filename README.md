@@ -2,6 +2,8 @@
 
 The Operator Courier is used to build, validate and push Operator Artifacts.
 
+Operator Courier is currently supported on Python 3.6 and above.
+
 ## Usage
 
 ### Command Line Interface
