@@ -1,12 +1,14 @@
 import argparse
 import pkg_resources
 import sys
+import logging
 from operatorcourier import api
 
 
 def main():
     """Generate the CLI bits
     """
+    logging.basicConfig()
     try:
         parser = _CliParser()
         parser.parse()
