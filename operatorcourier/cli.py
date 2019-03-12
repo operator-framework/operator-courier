@@ -40,7 +40,8 @@ These are the commands you can use:
             __version__ = 'unknown'
 
         parser.add_argument('command', help='Subcommand to run')
-        parser.add_argument('-v', '--version', help='Show the current version of operator-courier',
+        parser.add_argument('-v', '--version',
+                            help='Show the current version of operator-courier',
                             action='version', version=__version__)
 
         args = parser.parse_args(sys.argv[1:2])
