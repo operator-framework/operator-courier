@@ -24,7 +24,6 @@ setup(
   install_requires=[
     'pyyaml',
     'requests',
-    'regex',
     'validators'
   ],
   setup_requires=['pytest-runner'],
