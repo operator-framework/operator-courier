@@ -82,7 +82,7 @@ def build_verify_and_push(namespace, repository, revision, token,
     bundle = build_and_verify(source_dir, yamls, validation_output=validation_output)
 
     bundle = build_and_verify(source_dir, yamls)
-    
+
     with TemporaryDirectory() as temp_dir:
         with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
             yaml.dump(bundle, outfile, default_flow_style=False)
