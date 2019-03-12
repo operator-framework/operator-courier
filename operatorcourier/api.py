@@ -16,7 +16,6 @@ from operatorcourier.push import PushCmd
 from operatorcourier.format import format_bundle
 from operatorcourier.nest import nest_bundles
 
-logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
