@@ -107,6 +107,23 @@ class ValidateCmd():
             if "spec" not in crd:
                 self._log_error("crd spec not defined.")
                 valid = False
+            else:
+                if "names" not in crd['spec']:
+                    self._log_error("crd spec.names not defined.")
+                    valid = False
+                else:
+                    if "kind" not in crd['spec']['names']:
+                        self._log_error("crd spec.names.kind not defined.")
+                        valid = False
+                    if "plural" not in crd['spec']['names']:
+                        self._log_error("crd spec.names.plural not defined.")
+                        valid = False
+                if "group" not in crd['spec']:
+                    self._log_error("crd spec.group not defined.")
+                    valid = False
+                if "version" not in crd['spec']:
+                    self._log_error("crd spec.version not defined.")
+                    valid = False
 
         return valid
 
@@ -169,18 +186,66 @@ class ValidateCmd():
             if "owned" not in customresourcedefinitions:
                 self._log_error("spec.customresourcedefinitions.owned"
                                 "not defined for csv")
-                valid = False
-            else:
-                for crd in customresourcedefinitions["owned"]:
-                    if "name" not in crd:
-                        self._log_error("name not defined for item in "
-                                        "spec.customresourcedefinitions.")
-                        valid = False
-                    else:
-                        if crd["name"] not in crdList:
-                            self._log_error("custom resource definition referenced "
-                                            "in csv not defined in root list of crds")
+                return False
 
+            for csvOwnedCrd in customresourcedefinitions["owned"]:
+                if "name" not in csvOwnedCrd:
+                    self._log_error("name not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif csvOwnedCrd["name"] not in crdList:
+                    self._log_error("custom resource definition %s referenced in csv "
+                                    "not defined in root list of crds",
+                                    csvOwnedCrd["name"])
+                    valid = False
+
+                if "kind" not in csvOwnedCrd:
+                    self._log_error("kind not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                if "version" not in csvOwnedCrd:
+                    self._log_error("version not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+
+                for crd in bundleData[self.crdKey]:
+                    if 'name' not in csvOwnedCrd:
+                        continue
+                    if 'metadata' not in crd or 'name' not in crd['metadata']:
+                        continue
+                    if csvOwnedCrd['name'] != crd['metadata']['name']:
+                        continue
+
+                    if 'kind' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'names' in crd['spec']:
+                                if 'kind' in crd['spec']['names']:
+                                    if csvOwnedCrd['kind'] != \
+                                            crd['spec']['names']['kind']:
+                                        self._log_error('CRD.spec.names.kind does not '
+                                                        'match CSV.spec.crd.owned.kind')
+                                        valid = False
+
+                    if 'version' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'version' in crd['spec']:
+                                if csvOwnedCrd['version'] != crd['spec']['version']:
+                                    self._log_error('CRD.spec.version does not match '
+                                                    'CSV.spec.crd.owned.version')
+                                    valid = False
+
+                    if 'name' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'names' in crd['spec'] and 'group' in crd['spec']:
+                                if 'plural' in crd['spec']['names']:
+                                    if csvOwnedCrd['name'] != \
+                                            crd['spec']['names']['plural'] + '.' + \
+                                            crd['spec']['group']:
+                                        self._log_error("`CRD.spec.names.plural`."
+                                                        "`CRD.spec.group` does not "
+                                                        "match "
+                                                        "CSV.spec.crd.owned.name")
+                                        valid = False
         return valid
 
     def _csv_metadata_validation(self, metadata):
