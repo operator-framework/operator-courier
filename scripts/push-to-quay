@@ -21,7 +21,11 @@ trap cleanup EXIT
 
 tar czf ${FILENAME}.tar.gz ${FILENAME}.yaml
 
-BLOB=$(cat ${FILENAME}.tar.gz | base64 -w 0)
+if [ $(uname) == "Darwin" ];then
+    BLOB=$(cat ${FILENAME}.tar.gz | base64 -b 0)   
+else
+    BLOB=$(cat ${FILENAME}.tar.gz | base64 -w 0)
+fi
 
 curl -H "Content-Type: application/json" \
      -H "Authorization: ${TOKEN}" \
