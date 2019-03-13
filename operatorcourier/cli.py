@@ -58,11 +58,16 @@ class _CliParser():
             help='Path of your directory of yaml files to bundle. '
             'Either set this or use the files argument for bundle data.')
         verify_parser.add_argument(
-            '--ui_validate_io',
+            '--ui-validate-io',
             help='Validate bundle for operatorhub.io UI. '
             'To visually confirm that your operator will be displayed correctly, '
             'please visit https://operatorhub.io/preview and paste '
             'your operator CSV.',
+            dest='ui_validate_io',
+            action='store_true')
+        verify_parser.add_argument(  # DEPRECATED; BW compatibility
+            '--ui_validate_io',
+            help=argparse.SUPPRESS,
             action='store_true')
         verify_parser.add_argument(
             '--validation-output',
