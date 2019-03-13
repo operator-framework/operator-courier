@@ -1,6 +1,6 @@
 import logging
 import json
-import re
+import semver
 
 import validators as v
 
@@ -386,9 +386,11 @@ class ValidateCmd():
             return True
 
         def is_version(field):
-            pattern1 = re.compile(r'v(\d+\.)(\d+\.)(\d)')
-            pattern2 = re.compile(r'(\d+\.)(\d+\.)(\d)')
-            return pattern1.match(field) or pattern2.match(field)
+            try:
+                semver.parse(field)
+            except ValueError:
+                return False
+            return True
 
         def is_capability_level(field):
             levels = [
@@ -494,8 +496,8 @@ class ValidateCmd():
 
         # version check
         if not is_version(spec["version"]):
-            self._log_error("spec.version %s is not a valid version "
-                            "(example of a valid version is: v1.0.12)",
+            self._log_error("spec.version %s is not a valid semver "
+                            "(example of a valid semver is: 1.0.12)",
                             spec["version"])
             valid = False
 

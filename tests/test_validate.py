@@ -50,8 +50,8 @@ def test_ui_valid_bundle_io(bundle, expected_validation_results_dict):
         ("tests/test_files/bundles/verification/ui.invalid.bundle.yaml",
             {'errors': [
                 "csv.spec.links must be a list of name & url pairs.",
-                "spec.version invalid is not a valid version "
-                "(example of a valid version is: v1.0.12)",
+                "spec.version invalid is not a valid semver "
+                "(example of a valid semver is: 1.0.12)",
                 "metadata.annotations.capabilities invalid "
                 "is not a valid capabilities level",
                 "spec.icon[0].mediatype image/invalid is not "
