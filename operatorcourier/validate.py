@@ -373,14 +373,15 @@ class ValidateCmd():
         def is_version(field):
             pattern1 = re.compile(r'v(\d+\.)(\d+\.)(\d)')
             pattern2 = re.compile(r'(\d+\.)(\d+\.)(\d)')
-            return pattern1.match(field) or pattern2.match(field)
+            pattern3 = re.compile(r'(v)?(\d+\.)(\d+\.)(\d)(-[a-z0-9\-\.]+)?')
+            return pattern1.match(field) or pattern2.match(field) or pattern3.match(field)
 
         def is_capability_level(field):
             levels = [
                 "Basic Install",
                 "Seamless Upgrades",
                 "Full Lifecycle",
-                "Deep Insight",
+                "Deep Insights",
                 "Auto Pilot"
             ]
             return field in levels
@@ -467,7 +468,7 @@ class ValidateCmd():
         # capabilities check
         if not is_capability_level(annotations["capabilities"]):
             self._log_error("metadata.annotations.capabilities %s is not a "
-                            "valid capabilities level", annotations["capability"])
+                            "valid capabilities level", annotations["capabilities"])
             valid = False
 
         return valid

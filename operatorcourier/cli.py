@@ -59,7 +59,7 @@ These are the commands you can use:
         parser.add_argument('source_dir', help='Path of your directory of yaml '
                             'files to bundle. Either set this or '
                             'use the files argument for bundle data.')
-        parser.add_argument('--ui_validate_io',
+        parser.add_argument('--ui-validate-io',
                             help='Validate bundle for operatorhub.io UI',
                             action='store_true')
         parser.add_argument('--validation-output', dest='validation_output',
