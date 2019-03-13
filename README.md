@@ -1,5 +1,8 @@
 # Operator Courier
 
+[![Build Status](https://travis-ci.org/operator-framework/operator-courier.svg?branch=master)](https://travis-ci.org/operator-framework/operator-courier)
+[![Coverage Status](https://coveralls.io/repos/github/operator-framework/operator-courier/badge.svg?branch=master)](https://coveralls.io/github/operator-framework/operator-courier?branch=master)
+
 The Operator Courier is used to build, validate and push Operator Artifacts.
 
 ## Usage
