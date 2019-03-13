@@ -15,6 +15,7 @@ from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
 from operatorcourier.format import format_bundle
 from operatorcourier.nest import nest_bundles
+from operatorcourier.errors import OpCourierBadBundle
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,12 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     :param ui_validate_io: Optional flag to test operatorhub.io specific validation
     :param validation_output: Path to optional output file for validation logs
     :param repository: Repository name for the application
+
+    :raises TypeError: When called with both source_dir and yamls specified
+
+    :raises OpCourierBadYaml: When an invalid yaml file is encountered
+    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
+    :raises OpCourierBadBundle: When the resulting bundle fails validation
     """
 
     if source_dir is not None and yamls is not None:
@@ -53,17 +60,19 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle,
                                                                           repository)
 
-    if not valid:
-        bundle = None
-        logger.error("Bundle failed validation.")
-        raise ValueError("Resulting bundle is invalid, input yaml is improperly defined.")
-    else:
-        bundle = format_bundle(bundle)
-
     if validation_output is not None:
         with open(validation_output, 'w') as f:
             f.write(json.dumps(validation_results_dict) + "\n")
-    return bundle
+
+    if valid:
+        bundle = format_bundle(bundle)
+        return bundle
+    else:
+        logger.error("Bundle failed validation.")
+        raise OpCourierBadBundle(
+            "Resulting bundle is invalid, input yaml is improperly defined.",
+            validation_info=validation_results_dict
+        )
 
 
 def build_verify_and_push(namespace, repository, revision, token,
@@ -82,6 +91,16 @@ def build_verify_and_push(namespace, repository, revision, token,
     :param source_dir: Path to local directory of yaml files to be read
     :param yamls: List of yaml strings to create bundle with
     :param validation_output: Path to optional output file for validation logs
+
+    :raises TypeError: When called with both source_dir and yamls specified
+
+    :raises OpCourierBadYaml: When an invalid yaml file is encountered
+    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
+    :raises OpCourierBadBundle: When the resulting bundle fails validation
+
+    :raises OpCourierQuayCommunicationError: When communication with Quay fails
+    :raises OpCourierQuayErrorResponse: When Quay responds with an error
+    :raises OpCourierQuayError: When the request fails in an unexpected way
     """
 
     bundle = build_and_verify(source_dir, yamls, repository=repository,
@@ -102,6 +121,9 @@ def nest(source_dir, registry_dir):
     :param source_dir: Path to local directory of yaml files to be read
     :param output_dir: Path of your directory to be populated.
                        If directory does not exist, it will be created.
+
+    :raises OpCourierBadYaml: When an invalid yaml file is encountered
+    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     """
 
     yaml_files = []
