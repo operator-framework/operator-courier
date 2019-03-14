@@ -27,6 +27,7 @@ setup(
     'regex',
     'validators'
   ],
+  python_requires='>=3.6, <4',
   setup_requires=['pytest-runner'],
   tests_require=tests_require,
   extras_require={
@@ -36,4 +37,8 @@ setup(
   long_description_content_type="text/markdown",
   license="Apache License 2.0",
   include_package_data=True,
+  classifiers=[
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+  ],
 )
