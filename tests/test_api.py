@@ -64,3 +64,20 @@ def test_make_bundle_invalid(yaml_files):
     }
     assert str(e) == e_msg
     assert e.validation_info == e_dict
+
+
+def test_build_bundle_invalid_usage():
+    with pytest.raises(TypeError):
+        api.build_bundle('defined', ['also defined'])
+
+
+def test_build_empty_bundle():
+    bundle = api.build_bundle(None, None)
+    expected_data = {
+        'data': {
+            'customResourceDefinitions': [],
+            'clusterServiceVersions': [],
+            'packages': []
+        }
+    }
+    assert bundle.data_copy() == expected_data

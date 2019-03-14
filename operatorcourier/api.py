@@ -8,11 +8,8 @@ when using the operator-courier package
 import os
 import logging
 from tempfile import TemporaryDirectory
-import yaml
-import json
-from operatorcourier.build import BuildCmd
-from operatorcourier.validate import ValidateCmd
-from operatorcourier.push import PushCmd
+
+from operatorcourier.bundle import OperatorBundle
 from operatorcourier.format import format_bundle
 from operatorcourier.nest import nest_bundles
 from operatorcourier.errors import OpCourierBadBundle
@@ -39,39 +36,21 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     :raises OpCourierBadBundle: When the resulting bundle fails validation
     """
-
-    if source_dir is not None and yamls is not None:
-        logger.error("Both source_dir and yamls cannot be defined.")
-        raise TypeError(
-            "Both source_dir and yamls cannot be specified on function call.")
-
-    yaml_files = []
-
-    if source_dir is not None:
-        for filename in os.listdir(source_dir):
-            if filename.endswith(".yaml") or filename.endswith(".yml"):
-                with open(source_dir + "/" + filename) as f:
-                    yaml_files.append(f.read())
-    elif yamls is not None:
-        yaml_files = yamls
-
-    bundle = BuildCmd().build_bundle(yaml_files)
-
-    valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle,
-                                                                          repository)
+    bundle = build_bundle(source_dir, yamls,
+                          repository=repository,
+                          ui_validate_io=ui_validate_io)
 
     if validation_output is not None:
-        with open(validation_output, 'w') as f:
-            f.write(json.dumps(validation_results_dict) + "\n")
+        bundle.write_validation_info(validation_output)
 
-    if valid:
-        bundle = format_bundle(bundle)
-        return bundle
+    if bundle.valid:
+        bundle_data = format_bundle(bundle.data_copy())
+        return bundle_data
     else:
         logger.error("Bundle failed validation.")
         raise OpCourierBadBundle(
             "Resulting bundle is invalid, input yaml is improperly defined.",
-            validation_info=validation_results_dict
+            validation_info=bundle.validation_info
         )
 
 
@@ -100,18 +79,13 @@ def build_verify_and_push(namespace, repository, revision, token,
 
     :raises OpCourierQuayCommunicationError: When communication with Quay fails
     :raises OpCourierQuayErrorResponse: When Quay responds with an error
-    :raises OpCourierQuayError: When the request fails in an unexpected way
     """
+    bundle = build_bundle(source_dir, yamls, repository=repository)
 
-    bundle = build_and_verify(source_dir, yamls, repository=repository,
-                              validation_output=validation_output)
+    if validation_output is not None:
+        bundle.write_validation_info(validation_output)
 
-    with TemporaryDirectory() as temp_dir:
-        with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
-            yaml.dump(bundle, outfile, default_flow_style=False)
-            outfile.flush()
-
-        PushCmd().push(temp_dir, namespace, repository, revision, token)
+    bundle.push(namespace, repository, revision, token)
 
 
 def nest(source_dir, registry_dir):
@@ -136,3 +110,42 @@ def nest(source_dir, registry_dir):
 
     with TemporaryDirectory() as temp_dir:
         nest_bundles(yaml_files, registry_dir, temp_dir)
+
+
+def build_bundle(source_dir=None, yamls=None,
+                 repository=None, ui_validate_io=False):
+    """Build a bundle from a set of yaml files and validate it.
+
+    Specifying both source_dir and yamls on function call is considered
+    invalid usage and will raise a TypeError.
+
+    Specifying neither results in an empty bundle.
+
+    :param source_dir: Path to local directory of yaml files to be read.
+    :param yamls: List of yaml strings to create bundle with
+    :param repository: Optionally, check that the package name in the bundle
+                       matches the specified repository name.
+    :param ui_validate_io: Run additional operatorhub.io UI validation?
+
+    :raises TypeError: When called with both source_dir and yamls specified
+    :raises OpCourierBadYaml: When an invalid yaml file is encountered
+    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
+
+    :return: An OperatorBundle object containing the newly created bundle.
+    """
+    if source_dir is not None and yamls is not None:
+        logger.error("Both source_dir and yamls cannot be defined.")
+        raise TypeError(
+            "Both source_dir and yamls cannot be specified on function call."
+        )
+
+    if source_dir is not None:
+        bundle = OperatorBundle.from_directory(source_dir,
+                                               repository=repository,
+                                               ui_validate_io=ui_validate_io)
+    else:
+        bundle = OperatorBundle.from_yaml_data(yamls or [],
+                                               repository=repository,
+                                               ui_validate_io=ui_validate_io)
+
+    return bundle
