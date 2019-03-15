@@ -10,7 +10,6 @@ requests = "*"
 pytest = "*"
 pyyaml = "*"
 twine = "*"
-regex = "*"
 
 
 [dev-packages]

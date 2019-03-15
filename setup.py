@@ -24,7 +24,6 @@ setup(
   install_requires=[
     'pyyaml',
     'requests',
-    'regex',
     'validators'
   ],
   python_requires='>=3.6, <4',
