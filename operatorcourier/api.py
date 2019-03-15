@@ -28,6 +28,8 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
     :param source_dir: Path to local directory of yaml files to be read.
     :param yamls: List of yaml strings to create bundle with
+    :param ui_validate_io: Optional flag to test operatorhub.io specific validation
+    :param validation_output: Path to optional output file for validation logs
     """
 
     if source_dir is not None and yamls is not None:
@@ -74,8 +76,10 @@ def build_verify_and_push(namespace, repository, revision, token,
                       pushing the bundle is located.
     :param repository: Application repository name the application is bundled for.
     :param revision: Release version of the bundle.
+    :param token: Basic authentication token used to authorize push to external datastore
     :param source_dir: Path to local directory of yaml files to be read
     :param yamls: List of yaml strings to create bundle with
+    :param validation_output: Path to optional output file for validation logs
     """
 
     bundle = build_and_verify(source_dir, yamls, validation_output=validation_output)
