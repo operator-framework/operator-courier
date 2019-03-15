@@ -14,6 +14,10 @@ pipenv
 
 `sudo dnf install pipenv`
 
+tox
+
+`sudo dnf install tox`
+
 ### Configure virtualenv, run locally
 To test the package locally, we need to install dependent pip packages in a way that does not make modifications to the local environment. To achieve this, start a `pipenv` shell
 
