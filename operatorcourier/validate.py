@@ -391,6 +391,9 @@ class ValidateCmd():
                 res.append(example["kind"])
             return res
 
+        def is_mediatype(mediatype):
+            return mediatype in ["image/gif", "image/jpeg", "image/png", "image/svg+xml"]
+
         valid = True
 
         spec = csv["spec"]
@@ -469,5 +472,35 @@ class ValidateCmd():
             self._log_error("metadata.annotations.capabilities %s is not a "
                             "valid capabilities level", annotations["capability"])
             valid = False
+
+        # icon check
+        if "icon" in spec:
+            icons = spec["icon"]
+            if isinstance(icons, (list,)):
+                if len(icons) == 1:
+                    icon = icons[0]
+                    if len(icon.keys()) == 2:
+                        if "base64data" in icon and "mediatype" in icon:
+                            if not is_mediatype(icon["mediatype"]):
+                                self._log_error(
+                                    "spec.icon[0].mediatype %s is not a valid mediatype. "
+                                    "It must be one of \"image/gif\", \"image/jpeg\", "
+                                    "\"image/png\", \"image/svg+xml\"", icon["mediatype"]
+                                )
+                                valid = False
+                        else:
+                            self._log_error("spec.icon[0] must contain the fields "
+                                            "\"base64data\" and \"mediatype\".")
+                            valid = False
+                    else:
+                        self._log_error("spec.icon can only contain two fields: "
+                                        "\"base64data\" and \"mediatype\"")
+                        valid = False
+                else:
+                    self._log_error("spec.icon should be a singleton list")
+                    valid = False
+            else:
+                self._log_error("spec.icon should be a list")
+                valid = False
 
         return valid

@@ -60,7 +60,11 @@ These are the commands you can use:
                             'files to bundle. Either set this or '
                             'use the files argument for bundle data.')
         parser.add_argument('--ui_validate_io',
-                            help='Validate bundle for operatorhub.io UI',
+                            help='Validate bundle for operatorhub.io UI. '
+                            'To visually confirm that your operator '
+                            'will be displayed correctly, please visit '
+                            'https://operatorhub.io/preview and paste '
+                            'your operator CSV.',
                             action='store_true')
         parser.add_argument('--validation-output', dest='validation_output',
                             help='A file to write validation warnings and errors to'
