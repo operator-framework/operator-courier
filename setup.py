@@ -7,6 +7,7 @@ tests_require = [
   'pytest',
   'pytest-cov',
   'testfixtures',
+  'behave',
 ]
 
 setup(

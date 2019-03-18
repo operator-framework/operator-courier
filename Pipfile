@@ -10,6 +10,7 @@ requests = "*"
 pytest = "*"
 pyyaml = "*"
 twine = "*"
+behave = "*"
 
 
 [dev-packages]
