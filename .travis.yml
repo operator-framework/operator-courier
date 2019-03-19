@@ -10,8 +10,36 @@ matrix:
       python: "3.7"
       env: TOXENV=py37
       after_success: coveralls
+    - os: osx
+      language: generic
+      env:
+        - PYTHON=3.6.0
+        - TOXENV=py36
+    - os: osx
+      language: generic
+      env:
+        - PYTHON=3.7.0
+        - TOXENV=py37
     - dist: xenial
       python: "3.7"
       env: TOXENV=flake8
+
+# Installing Python on macOS for Travis CI: https://pythonhosted.org/CodeChat/.travis.yml.html
+before_install: |
+  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    brew update
+    brew install openssl readline
+    brew outdated pyenv || brew upgrade pyenv
+
+    brew install pyenv-virtualenv
+    pyenv install $PYTHON
+
+    export PYENV_VERSION=$PYTHON
+    export PATH="/Users/travis/.pyenv/shims:${PATH}"
+    pyenv-virtualenv venv
+    source venv/bin/activate
+
+    python --version
+  fi
 install: pip install tox-travis coveralls
 script: tox
