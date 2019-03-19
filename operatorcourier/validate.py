@@ -380,7 +380,7 @@ class ValidateCmd():
                 "Basic Install",
                 "Seamless Upgrades",
                 "Full Lifecycle",
-                "Deep Insight",
+                "Deep Insights",
                 "Auto Pilot"
             ]
             return field in levels
@@ -470,7 +470,7 @@ class ValidateCmd():
         # capabilities check
         if not is_capability_level(annotations["capabilities"]):
             self._log_error("metadata.annotations.capabilities %s is not a "
-                            "valid capabilities level", annotations["capability"])
+                            "valid capabilities level", annotations["capabilities"])
             valid = False
 
         # icon check
