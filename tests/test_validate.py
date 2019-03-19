@@ -5,7 +5,7 @@ from operatorcourier.format import unformat_bundle
 
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
-    ("tests/test_files/bundles/verification/valid.bundle.yaml",
+    ("tests/test_files/bundles/verification/noicon.valid.bundle.yaml",
         {'errors': [], 'warnings': ['csv spec.icon not defined']}),
     ("tests/test_files/bundles/verification/nocrd.valid.bundle.yaml",
         {'errors': [], 'warnings': ['csv spec.icon not defined',
@@ -33,13 +33,29 @@ def test_invalid_bundle(bundle, expected_validation_results_dict):
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
         ("tests/test_files/bundles/verification/valid.bundle.yaml",
-            {'errors': [], 'warnings': ['csv spec.icon not defined',
-                                        'csv spec.icon not defined. Without this field, '
-                                        'the operator will display a default operator '
-                                        'framework icon.']}), ])
+            {'errors': [], 'warnings': []}), ])
 def test_ui_valid_bundle_io(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_ui_validation_results(bundle)
     assert valid is True
+    assert validation_results_dict == expected_validation_results_dict
+
+
+@pytest.mark.parametrize('bundle,expected_validation_results_dict', [
+        ("tests/test_files/bundles/verification/ui.invalid.bundle.yaml",
+            {'errors': [
+                "csv.spec.links must be a list of name & url pairs.",
+                "spec.version invalid is not a valid version "
+                "(example of a valid version is: v1.0.12)",
+                "spec.icon[0].mediatype image/invalid is not "
+                "a valid mediatype. It must be one of \"image/gif\", "
+                "\"image/jpeg\", \"image/png\", \"image/svg+xml\"",
+                "UI validation failed to verify that required fields "
+                "for operatorhub.io are properly formatted."
+                ],
+                'warnings': []}), ])
+def test_ui_invalid_bundle_io(bundle, expected_validation_results_dict):
+    valid, validation_results_dict = get_ui_validation_results(bundle)
+    assert valid is False
     assert validation_results_dict == expected_validation_results_dict
 
 
