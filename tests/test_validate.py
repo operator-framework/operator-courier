@@ -2,6 +2,7 @@ import yaml
 import pytest
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.format import unformat_bundle
+from testfixtures import LogCapture
 
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
@@ -57,6 +58,49 @@ def test_ui_invalid_bundle_io(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_ui_validation_results(bundle)
     assert valid is False
     assert validation_results_dict == expected_validation_results_dict
+
+
+@pytest.mark.parametrize('file_name,correct_repo_name', [
+    ("tests/test_files/bundles/verification/valid.bundle.yaml", 'marketplace'),
+    ("tests/test_files/bundles/verification/nocrd.valid.bundle.yaml", 'svcat'),
+])
+def test_valid_bundles_with_package_name_and_repo_name_match(file_name,
+                                                             correct_repo_name):
+    with open(file_name) as f:
+        bundle = yaml.safe_load(f)
+        bundle = unformat_bundle(bundle)
+        valid, _ = ValidateCmd().validate(bundle, repository=correct_repo_name)
+        assert valid
+
+
+@pytest.mark.parametrize('file_name,wrong_repo_name', [
+    ("tests/test_files/bundles/verification/valid.bundle.yaml", 'wrong-repo-name'),
+    ("tests/test_files/bundles/verification/nocrd.valid.bundle.yaml", 'wrong-repo-name'),
+])
+def test_valid_bundles_with_package_name_and_repo_name_mismatch(file_name,
+                                                                wrong_repo_name):
+    with open(file_name) as f:
+        bundle = yaml.safe_load(f)
+        bundle = unformat_bundle(bundle)
+        valid, _ = ValidateCmd().validate(bundle, repository=wrong_repo_name)
+        assert not valid
+
+
+@pytest.mark.parametrize('file_name', [
+    "tests/test_files/bundles/verification/multiplepkgs.invalid.bundle.yaml",
+])
+def test_valid_bundles_with_multiple_packages(file_name):
+    with open(file_name) as f:
+        bundle = yaml.safe_load(f)
+        bundle = unformat_bundle(bundle)
+
+    with LogCapture() as logs:
+        valid, _ = ValidateCmd().validate(bundle)
+
+    assert not valid
+    logs.check_present(('operatorcourier.validate',
+                        'ERROR',
+                        'Only 1 package is expected to exist per bundle, but got 2.'))
 
 
 def get_ui_validation_results(bundle):

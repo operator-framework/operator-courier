@@ -45,18 +45,19 @@ class ValidateCmd():
         self.validation_json['errors'].append(message % args)
         logger.error(message, *args, **kwargs)
 
-    def validate(self, bundle):
+    def validate(self, bundle, repository=None):
         """validate takes a bundle as a dictionary and returns a boolean value that
         describes if the bundle is valid. It also logs verification information when
         there are invalid sections in the bundle.
 
         :param bundle: Dictionary of bundle value
+        :param repository: Repository name for the application
         """
         logger.info("Validating bundle.")
 
-        return self._bundle_validation(bundle), self.validation_json
+        return self._bundle_validation(bundle, repository), self.validation_json
 
-    def _bundle_validation(self, bundle):
+    def _bundle_validation(self, bundle, repository=None):
         validationDict = dict()
 
         if self.dataKey not in bundle:
@@ -75,6 +76,13 @@ class ValidateCmd():
         if self.ui_validate_io:
             validationDict[self.csvKey] &= self._type_validation(
                 bundleData, self.csvKey, self._ui_validation_io, True)
+        if validationDict[self.pkgsKey] and repository is not None:
+            packageName = bundleData['packages'][0]['packageName']
+            if repository != packageName:
+                self._log_error('The packageName (%s) in bundle does not match '
+                                'repository name (%s) provided as command line argument.',
+                                packageName, repository)
+                validationDict[self.pkgsKey] = False
 
         valid = True
         for key, value in validationDict.items():
@@ -232,43 +240,50 @@ class ValidateCmd():
 
         pkgs = bundleData[self.pkgsKey]
 
-        for pkg in pkgs:
-            if "packageName" in pkg:
-                logger.info("Evaluating package %s", pkg["packageName"])
-            else:
-                self._log_error("packageName not defined.")
-                valid = False
+        num_pkgs = len(pkgs)
+        if num_pkgs != 1:
+            self._log_error('Only 1 package is expected to exist per bundle, but got %d.',
+                            num_pkgs)
+            return False
 
-            if "channels" in pkg:
-                channels = pkg["channels"]
-                if len(channels) == 0:
-                    self._log_error("no package channels defined.")
-                    valid = False
-                else:
-                    csvNames = []
-                    for csv in bundleData[self.csvKey]:
-                        try:
-                            csvName = csv["metadata"]["name"]
-                            csvNames.append(csvName)
-                        except KeyError:
-                            pass
-                    for channel in channels:
-                        if "name" not in channel:
-                            self._log_error("package channel.name not defined.")
+        pkg = pkgs[0]
+
+        if "packageName" in pkg:
+            logger.info("Evaluating package %s", pkg["packageName"])
+        else:
+            self._log_error("packageName not defined.")
+            valid = False
+
+        if "channels" in pkg:
+            channels = pkg["channels"]
+            if len(channels) == 0:
+                self._log_error("no package channels defined.")
+                valid = False
+            else:
+                csvNames = []
+                for csv in bundleData[self.csvKey]:
+                    try:
+                        csvName = csv["metadata"]["name"]
+                        csvNames.append(csvName)
+                    except KeyError:
+                        pass
+                for channel in channels:
+                    if "name" not in channel:
+                        self._log_error("package channel.name not defined.")
+                        valid = False
+
+                    if "currentCSV" not in channel:
+                        self._log_error("package channel.currentCSV not defined.")
+                    else:
+                        if channel["currentCSV"] not in csvNames:
+                            self._log_error("channel.currentCSV %s is not "
+                                            "included in list of csvs",
+                                            channel["currentCSV"])
                             valid = False
 
-                        if "currentCSV" not in channel:
-                            self._log_error("package channel.currentCSV not defined.")
-                        else:
-                            if channel["currentCSV"] not in csvNames:
-                                self._log_error("channel.currentCSV %s is not "
-                                                "included in list of csvs",
-                                                channel["currentCSV"])
-                                valid = False
-
-            else:
-                self._log_error("package channels not defined.")
-                valid = False
+        else:
+            self._log_error("package channels not defined.")
+            valid = False
 
         return valid
 

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
-                     validation_output=None):
+                     validation_output=None, repository=None):
     """Build and verify constructs an operator bundle from
     a set of files and then verifies it for usefulness and accuracy.
 
@@ -30,6 +30,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     :param yamls: List of yaml strings to create bundle with
     :param ui_validate_io: Optional flag to test operatorhub.io specific validation
     :param validation_output: Path to optional output file for validation logs
+    :param repository: Repository name for the application
     """
 
     if source_dir is not None and yamls is not None:
@@ -49,7 +50,8 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
     bundle = BuildCmd().build_bundle(yaml_files)
 
-    valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle)
+    valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle,
+                                                                          repository)
 
     if not valid:
         bundle = None
@@ -82,7 +84,8 @@ def build_verify_and_push(namespace, repository, revision, token,
     :param validation_output: Path to optional output file for validation logs
     """
 
-    bundle = build_and_verify(source_dir, yamls, validation_output=validation_output)
+    bundle = build_and_verify(source_dir, yamls, repository=repository,
+                              validation_output=validation_output)
 
     with TemporaryDirectory() as temp_dir:
         with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
