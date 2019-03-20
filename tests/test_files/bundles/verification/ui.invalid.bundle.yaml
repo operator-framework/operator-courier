@@ -39,12 +39,12 @@ data:
                 }
               
             ]
-          categories: openshift required
+          categories: invalid
           certified: 'true'
           containerImage: quay.io/openshift/origin-operator-marketplace:latest
           createdAt: 2019/11/15
           description: An operator to run the OpenShift marketplace
-          capabilities: Basic Install
+          capabilities: invalid
           repository: https://github.com/operator-framework/operator-marketplace
           support: Red Hat
         name: marketplace-operator.v0.0.1

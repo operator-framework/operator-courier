@@ -7,10 +7,13 @@ from testfixtures import LogCapture
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
     ("tests/test_files/bundles/verification/noicon.valid.bundle.yaml",
-        {'errors': [], 'warnings': ['csv spec.icon not defined']}),
+        {'errors': [], 'warnings': [
+            'csv metadata.annotations.categories not defined',
+            'csv spec.icon not defined']}),
     ("tests/test_files/bundles/verification/nocrd.valid.bundle.yaml",
-        {'errors': [], 'warnings': ['csv spec.icon not defined',
-         'csv spec.maturity not defined']}),
+        {'errors': [], 'warnings': [
+            'csv spec.icon not defined',
+            'csv spec.maturity not defined']}),
 ])
 def test_valid_bundles(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)
@@ -21,7 +24,9 @@ def test_valid_bundles(bundle, expected_validation_results_dict):
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
     ("tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml",
         {'errors': ['Bundle does not contain any packages.'],
-            'warnings': ['csv spec.icon not defined']}),
+            'warnings': [
+                'csv metadata.annotations.categories not defined',
+                'csv spec.icon not defined']}),
     ("tests/test_files/bundles/verification/no-data-key.bundle.yaml",
         {'errors': ['Bundle does not contain any clusterServiceVersions.',
                     'Bundle does not contain any packages.'], 'warnings': []}),
@@ -47,9 +52,12 @@ def test_ui_valid_bundle_io(bundle, expected_validation_results_dict):
                 "csv.spec.links must be a list of name & url pairs.",
                 "spec.version invalid is not a valid version "
                 "(example of a valid version is: v1.0.12)",
+                "metadata.annotations.capabilities invalid "
+                "is not a valid capabilities level",
                 "spec.icon[0].mediatype image/invalid is not "
                 "a valid mediatype. It must be one of \"image/gif\", "
                 "\"image/jpeg\", \"image/png\", \"image/svg+xml\"",
+                "category invalid is not a valid category",
                 "UI validation failed to verify that required fields "
                 "for operatorhub.io are properly formatted."
                 ],
