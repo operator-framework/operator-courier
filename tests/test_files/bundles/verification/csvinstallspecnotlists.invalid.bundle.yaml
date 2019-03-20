@@ -71,76 +71,9 @@ data:
         displayName: marketplace-operator
         install:
           spec:
-            permissions:
-              rules:
-              - apiGroups:
-                - ""
-                resources:
-                - namespaces
-                verbs:
-                - get
-            clusterPermissions:
-              rules:
-              - apiGroups:
-                - marketplace.redhat.com
-                resources:
-                - '*'
-                verbs:
-                - '*'
-              - apiGroups:
-                - ''
-                resources:
-                - services
-                - configmaps
-                verbs:
-                - '*'
-              - apiGroups:
-                - operators.coreos.com
-                resources:
-                - catalogsources
-                verbs:
-                - '*'
-              serviceAccountName: marketplace-operator
-            deployments:
-              name: marketplace-operator
-              spec:
-                replicas: 1
-                selector:
-                  matchLabels:
-                    name: marketplace-operator
-                template:
-                  metadata:
-                    labels:
-                      name: marketplace-operator
-                    name: marketplace-operator
-                  spec:
-                    containers:
-                    - command:
-                      - marketplace-operator
-                      env:
-                      - name: WATCH_NAMESPACE
-                        valueFrom:
-                          fieldRef:
-                            fieldPath: metadata.namespace
-                      - name: OPERATOR_NAME
-                        value: marketplace-operator
-                      image: quay.io/openshift/origin-operator-marketplace:latest
-                      imagePullPolicy: Always
-                      livenessProbe:
-                        httpGet:
-                          path: /healthz
-                          port: 8080
-                      name: marketplace-operator
-                      ports:
-                      - containerPort: 60000
-                        name: metrics
-                      - containerPort: 8080
-                        name: healthz
-                      readinessProbe:
-                        httpGet:
-                          path: /healthz
-                          port: 8080
-                    serviceAccountName: marketplace-operator
+            permissions: Definitely not a list
+            clusterPermissions: This is not an array
+            deployments: This is not a list
           strategy: deployment
         installModes:
         - supported: true

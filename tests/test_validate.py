@@ -2,52 +2,85 @@ import yaml
 import pytest
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.format import unformat_bundle
+import operatorcourier.schema
 from testfixtures import LogCapture
+
+
+@pytest.mark.parametrize('schema', [
+    ('CustomResourceDefinition'),
+    ('ClusterServiceVersion')
+])
+def test_schema(schema):
+    getattr(operatorcourier.schema, schema)().check_schema()
 
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
     ("tests/test_files/bundles/verification/noicon.valid.bundle.yaml",
         {'errors': [], 'warnings': [
-            'csv metadata.annotations.categories not defined',
-            'csv spec.icon not defined']}),
+            "csv.metadata.annotations: 'categories' is not defined",
+            "csv.spec: 'icon' is not defined"]}),
     ("tests/test_files/bundles/verification/nocrd.valid.bundle.yaml",
         {'errors': [], 'warnings': [
-            'csv spec.icon not defined',
-            'csv spec.maturity not defined']}),
+            "csv.spec: 'icon' is not defined",
+            "csv.spec: 'maturity' is not defined"]}),
+    ("tests/test_files/bundles/verification/"
+     "customresourcedefinitions.missing.valid.bundle.yaml",
+        {'errors': [], 'warnings': []}),
 ])
 def test_valid_bundles(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)
-    assert valid is True
+    assert valid
     assert validation_results_dict == expected_validation_results_dict
 
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
     ("tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml",
         {'errors': ['Bundle does not contain any packages.'],
-            'warnings': [
-                'csv metadata.annotations.categories not defined',
-                'csv spec.icon not defined']}),
+         'warnings': ["csv.metadata.annotations: 'categories' is not defined",
+                      "csv.spec: 'icon' is not defined"]}),
     ("tests/test_files/bundles/verification/no-data-key.bundle.yaml",
         {'errors': ['Bundle does not contain any clusterServiceVersions.',
                     'Bundle does not contain any packages.'], 'warnings': []}),
     ("tests/test_files/bundles/verification/csvinstallspecnotlists.invalid.bundle.yaml",
-        {'errors': ['csv spec.install.spec.deployments should be a list',
-                    'csv spec.install.spec.permissions should be a list',
-                    'csv spec.install.spec.clusterPermissions should be a list'],
-            'warnings': ['csv spec.icon not defined']}),
+        {'errors': ["csv.spec.install.spec.deployments: "
+                    "'This is not a list' is not of type 'array'",
+                    "csv.spec.install.spec.permissions: "
+                    "'Definitely not a list' is not of type 'array'",
+                    "csv.spec.install.spec.clusterPermissions: "
+                    "'This is not an array' is not of type 'array'"],
+            'warnings': ["csv.spec: 'icon' is not defined"]}),
     ("tests/test_files/bundles/verification/"
         "csvmissinginstallattributes.invalid.bundle.yaml",
-        {'errors': ['csv spec.install.strategy not defined',
-                    'csv spec.install.spec not defined'],
-            'warnings': ['csv spec.icon not defined']}),
+        {'errors': ["csv.spec.install: 'strategy' is a required property",
+                    "csv.spec.install: 'spec' is a required property"],
+            'warnings': ["csv.spec: 'icon' is not defined"]}),
     ("tests/test_files/bundles/verification/"
         "csvinstallstrategywrongvalue.invalid.bundle.yaml",
-        {'errors': ["csv spec.install.strategy must be one of ['deployment']"],
-            'warnings': ['csv spec.icon not defined']}),
+        {'errors': ["csv.spec.install.strategy: "
+                    "'foodeployment' is not one of ['deployment']"],
+            'warnings': ["csv.spec: 'icon' is not defined"]}),
+    ("tests/test_files/bundles/verification/alm-examples.invalid.bundle.yaml",
+        {'errors': ["csv.metadata.annotations.alm-examples: "
+                    "'{\\n  bad-example\\n}' is not a 'jsonString'"],
+         'warnings': []}),
+    ("tests/test_files/bundles/verification/wrongcrd.invalid.bundle.yaml",
+        {'errors': ["csv.spec.customresourcedefinitions.owned[0].name: "
+                    "'operatorsources.marketplace.example.com' is not one of "
+                    "['catalogsourceconfigs.marketplace.redhat.com', "
+                    "'operatorsources.marketplace.redhat.com']"],
+         'warnings': []}),
+    ("tests/test_files/bundles/verification/owned.name.missing.invalid.bundle.yaml",
+        {'errors': ["csv.spec.customresourcedefinitions.owned[0]: "
+                    "'name' is a required property"],
+         'warnings': []}),
+    ("tests/test_files/bundles/verification/owned.missing.invalid.bundle.yaml",
+        {'errors': ["csv.spec.customresourcedefinitions: "
+                    "'owned' is a required property"],
+         'warnings': []}),
 ])
 def test_invalid_bundle(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)
-    assert valid is False
+    assert not valid
     assert validation_results_dict == expected_validation_results_dict
 
 
@@ -144,21 +177,24 @@ def get_bundle(bundle):
      ('operatorcourier.validate', 'ERROR', 'Bundle does not contain any packages.')),
 
     ('tests/test_files/bundles/verification/crdmissingkindfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.names.kind not defined.')),
+     ('operatorcourier.validate', 'ERROR',
+      'crd.spec.names: \'kind\' is a required property')),
     ('tests/test_files/bundles/verification/crdmissingpluralfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.names.plural not defined.')),
+     ('operatorcourier.validate', 'ERROR',
+      'crd.spec.names: \'plural\' is a required property')),
     ('tests/test_files/bundles/verification/crdmissingversionfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.version not defined.')),
+     ('operatorcourier.validate', 'ERROR',
+      'crd.spec: \'version\' is a required property')),
 
     ('tests/test_files/bundles/verification/csvmissingkindfield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'kind not defined for item in spec.customresourcedefinitions.')),
+      'csv.spec.customresourcedefinitions.owned[1]: \'kind\' is a required property')),
     ('tests/test_files/bundles/verification/csvmissingnamefield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'name not defined for item in spec.customresourcedefinitions.')),
+      'csv.spec.customresourcedefinitions.owned[0]: \'name\' is a required property')),
     ('tests/test_files/bundles/verification/csvmissingversionfield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'version not defined for item in spec.customresourcedefinitions.')),
+      'csv.spec.customresourcedefinitions.owned[0]: \'version\' is a required property')),
 ])
 def test_invalid_bundle_missing_fields(bundleFile, logInfo):
     _test_invalid_bundle_with_log(bundleFile, logInfo)

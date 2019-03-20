@@ -10,5 +10,6 @@ pytest = "*"
 pyyaml = "*"
 twine = "*"
 semver = "*"
+jsonschema = "*"
 
 [dev-packages]

@@ -9,8 +9,33 @@ from .const_io import (
     metadata_required_fields,
     metadata_annotations_required_fields,
     spec_required_fields)
+from .schema import (
+    CustomResourceDefinition,
+    ClusterServiceVersion,
+    ValidationWarning)
 
 logger = logging.getLogger(__name__)
+
+
+def _path_to_string(path):
+    """Create a string representation of a data path
+
+    Args:
+        path: Iterable with path items, for example ['owned', 2, 'name'].
+
+    Returns:
+        A string representation of the path. For example:
+        ".owned[2].name"
+    """
+    string = ''
+    for item in path:
+        if isinstance(item, str):
+            string += f'.{item}'
+        elif isinstance(item, int):
+            string += f'[{item}]'
+        else:
+            raise ValueError(f'{item!r} is {type(item)}')
+    return string
 
 
 class ValidateCmd():
@@ -26,7 +51,6 @@ class ValidateCmd():
             warnings=[],
             errors=[],
         )
-        pass
 
     def _log_warning(self, message, *args, **kwargs):
         """_log_warning prints the message to the logger as a warning
@@ -97,130 +121,21 @@ class ValidateCmd():
         logger.info("Validating custom resource definitions.")
         valid = True
 
-        crds = bundleData[self.crdKey]
-
-        for crd in crds:
-            if "metadata" in crd:
-                if "name" in crd["metadata"]:
-                    logger.info("Evaluating crd %s", crd["metadata"]["name"])
-                else:
-                    self._log_error("crd metadata.name not defined.")
-                    valid = False
-            else:
-                self._log_error("crd metadata not defined.")
-                valid = False
-
-            if "apiVersion" not in crd:
-                self._log_error("crd apiVersion not defined.")
-                valid = False
-
-            if "spec" not in crd:
-                self._log_error("crd spec not defined.")
-                valid = False
-            else:
-                if "names" not in crd['spec']:
-                    self._log_error("crd spec.names not defined.")
-                    valid = False
-                else:
-                    if "kind" not in crd['spec']['names']:
-                        self._log_error("crd spec.names.kind not defined.")
-                        valid = False
-                    if "plural" not in crd['spec']['names']:
-                        self._log_error("crd spec.names.plural not defined.")
-                        valid = False
-                if "group" not in crd['spec']:
-                    self._log_error("crd spec.group not defined.")
-                    valid = False
-                if "version" not in crd['spec']:
-                    self._log_error("crd spec.version not defined.")
-                    valid = False
-
-        return valid
-
-    def _csv_validation(self, bundleData):
-        valid = True
-        logger.info("Validating cluster service versions.")
-
-        csvs = bundleData[self.csvKey]
-
-        for csv in csvs:
-            if "metadata" in csv:
-                if self._csv_metadata_validation(csv["metadata"]) is False:
-                    valid = False
-            else:
-                self._log_error("csv metadata not defined.")
-                valid = False
-
-            if "apiVersion" not in csv:
-                self._log_error("csv apiVersion not defined.")
-                valid = False
-
-            if "spec" in csv:
-                if self._csv_spec_validation(csv["spec"], bundleData) is False:
-                    valid = False
-            else:
-                self._log_error("csv spec not defined.")
+        for crd in bundleData[self.crdKey]:
+            for error in CustomResourceDefinition().iter_errors(crd):
+                self._log_error('crd%s: %s',
+                                _path_to_string(error.absolute_path),
+                                error.message)
                 valid = False
 
         return valid
 
-    def _csv_spec_validation(self, spec, bundleData):
+    def _csv_crd_match(self, bundleData):
         valid = True
-
-        warnSpecList = ["displayName", "description", "icon",
-                        "version", "provider", "maturity"]
-
-        for item in warnSpecList:
-            if item not in spec:
-                self._log_warning("csv spec.%s not defined" % item)
-
-        if "installModes" not in spec:
-            self._log_error("csv spec.installModes not defined")
-            valid = False
-
-        if "install" in spec:
-            if self._csv_spec_install_validation(spec["install"]) is False:
-                valid = False
-        else:
-            self._log_error("csv spec.install not defined")
-            valid = False
-
-        if "customresourcedefinitions" in spec:
-            customresourcedefinitions = spec["customresourcedefinitions"]
-
-            crdList = []
-            for crd in bundleData[self.crdKey]:
-                try:
-                    name = crd["metadata"]["name"]
-                    crdList.append(name)
-                except KeyError:
-                    pass
-
-            if "owned" not in customresourcedefinitions:
-                self._log_error("spec.customresourcedefinitions.owned"
-                                "not defined for csv")
-                return False
-
-            for csvOwnedCrd in customresourcedefinitions["owned"]:
-                if "name" not in csvOwnedCrd:
-                    self._log_error("name not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
-                elif csvOwnedCrd["name"] not in crdList:
-                    self._log_error("custom resource definition %s referenced in csv "
-                                    "not defined in root list of crds",
-                                    csvOwnedCrd["name"])
-                    valid = False
-
-                if "kind" not in csvOwnedCrd:
-                    self._log_error("kind not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
-                if "version" not in csvOwnedCrd:
-                    self._log_error("version not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
-
+        for csv in bundleData[self.csvKey]:
+            for csvOwnedCrd in (csv.get('spec', {})
+                                   .get('customresourcedefinitions', {})
+                                   .get('owned', [])):
                 for crd in bundleData[self.crdKey]:
                     if 'name' not in csvOwnedCrd:
                         continue
@@ -261,99 +176,30 @@ class ValidateCmd():
                                         valid = False
         return valid
 
-    def _csv_spec_install_validation(self, install):
+    def _csv_validation(self, bundleData):
+        logger.info("Validating cluster service versions.")
         valid = True
 
-        wantStrategyList = ["deployment"]
+        crd_list = []
+        for crd in bundleData[self.crdKey]:
+            name = crd.get("metadata", {}).get("name")
+            if name:
+                crd_list.append(name)
 
-        # strategy check (required)
-        if "strategy" in install:
-            if install["strategy"] not in wantStrategyList:
-                self._log_error(
-                    "csv spec.install.strategy must be one of %s" % wantStrategyList)
-                valid = False
-        else:
-            self._log_error("csv spec.install.strategy not defined")
+        for csv in bundleData[self.csvKey]:
+            for error in ClusterServiceVersion(crd_list=crd_list).iter_errors(csv):
+                if isinstance(error, ValidationWarning):
+                    self._log_warning('csv%s: %s',
+                                      _path_to_string(error.absolute_path),
+                                      error.message)
+                else:
+                    valid = False
+                    self._log_error('csv%s: %s',
+                                    _path_to_string(error.absolute_path),
+                                    error.message)
+
+        if not self._csv_crd_match(bundleData):
             valid = False
-
-        # spec check (required)
-        if "spec" in install:
-            # deployments check (required)
-            if "deployments" in install["spec"]:
-                deployments = install["spec"]["deployments"]
-                if not isinstance(deployments, (list,)):
-                    self._log_error(
-                        "csv spec.install.spec.deployments should be a list")
-                    valid = False
-            else:
-                self._log_error("csv spec.install.spec.deployments not defined")
-
-            # permissions check (optional)
-            try:
-                permissions = install["spec"]["permissions"]
-                if not isinstance(permissions, (list,)):
-                    self._log_error("csv spec.install.spec.permissions should be a list")
-                    valid = False
-            except KeyError:
-                pass
-
-            # clusterPermissions check (optional)
-            try:
-                clusterPermissions = install["spec"]["clusterPermissions"]
-                if not isinstance(clusterPermissions, (list,)):
-                    self._log_error(
-                        "csv spec.install.spec.clusterPermissions should be a list"
-                    )
-                    valid = False
-            except KeyError:
-                pass
-
-        else:
-            self._log_error("csv spec.install.spec not defined")
-            valid = False
-
-        return valid
-
-    def _csv_metadata_validation(self, metadata):
-        valid = True
-
-        if "name" in metadata:
-            logger.info("Evaluating csv %s", metadata["name"])
-        else:
-            self._log_error("csv metadata.name not defined.")
-            valid = False
-
-        if "annotations" in metadata:
-            annotations = metadata["annotations"]
-
-            annotationList = ["categories", "description",
-                              "containerImage", "createdAt", "support"]
-
-            for item in annotationList:
-                if item not in annotations:
-                    self._log_warning("csv metadata.annotations.%s not defined" % item)
-
-            # check certified value's type in particular. should be string, not bool
-            if "certified" not in annotations:
-                self._log_warning("csv metadata.annotations.certified not defined.")
-            else:
-                isString = isinstance(annotations["certified"], str)
-                if not isString:
-                    self._log_error("metadata.annotations.certified is not of type"
-                                    "string")
-                    valid = False
-
-            # if alm-examples is defined, check that its value is valid json
-            if "alm-examples" in annotations:
-                try:
-                    json.loads(annotations["alm-examples"])
-                except Exception:
-                    self._log_error("metadata.annotations.alm-examples contains "
-                                    "invalid json string")
-                    valid = False
-
-        else:
-            self._log_warning("csv metadata.annotations not defined.")
 
         return valid
 

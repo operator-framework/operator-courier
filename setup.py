@@ -22,6 +22,7 @@ setup(
   },
   keywords=['operator', 'courier'],
   install_requires=[
+    'jsonschema',
     'pyyaml',
     'requests',
     'validators',
