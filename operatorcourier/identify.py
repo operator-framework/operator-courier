@@ -1,6 +1,7 @@
 from yaml import safe_load
 from yaml import MarkedYAMLError
 import logging
+from operatorcourier.errors import OpCourierBadYaml, OpCourierBadArtifact
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def get_operator_artifact_type(operatorArtifactString):
     except MarkedYAMLError:
         msg = "Courier requires valid input YAML files"
         logger.error(msg)
-        raise ValueError(msg)
+        raise OpCourierBadYaml(msg)
     else:
         artifact_type, artifact_name = None, None
         if isinstance(operatorArtifact, dict):
@@ -34,4 +35,4 @@ def get_operator_artifact_type(operatorArtifactString):
 
         msg = 'Courier requires valid CSV, CRD, and Package files'
         logger.error(msg)
-        raise ValueError(msg)
+        raise OpCourierBadArtifact(msg)

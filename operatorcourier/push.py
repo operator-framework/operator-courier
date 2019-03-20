@@ -3,6 +3,10 @@ import requests
 import tarfile
 import logging
 from tempfile import TemporaryDirectory
+from operatorcourier.errors import (
+    OpCourierQuayCommunicationError,
+    OpCourierQuayErrorResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,16 +45,23 @@ class PushCmd():
         logger.info('Pushing bundle to %s' % push_uri)
         headers = {'Content-Type': 'application/json', 'Authorization': auth_token}
         json = {'blob': bundle, 'release': release, "media_type": "helm"}
-        r = requests.post(push_uri, json=json, headers=headers)
+
+        try:
+            r = requests.post(push_uri, json=json, headers=headers)
+        except requests.RequestException as e:
+            msg = str(e)
+            logger.error(msg)
+            raise OpCourierQuayCommunicationError(msg)
+
         if r.status_code != 200:
             logger.error(r.text)
 
-            msg = 'Failed to get error details'
             try:
-                error = r.json()['error']
-                msg = "Quay.io answered: '{}' ({})".format(
-                    error['code'], error['message'])
-            except Exception:
-                pass
+                r_json = r.json()
+            except ValueError:
+                r_json = {}
 
-            raise ValueError("Failed to push to app registry: {}".format(msg))
+            msg = r_json.get('error', {}).get(
+                'message', 'Failed to get error details.'
+            )
+            raise OpCourierQuayErrorResponse(msg, r.status_code, r_json)
