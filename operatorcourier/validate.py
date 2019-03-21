@@ -409,6 +409,23 @@ class ValidateCmd():
         def is_mediatype(mediatype):
             return mediatype in ["image/gif", "image/jpeg", "image/png", "image/svg+xml"]
 
+        def is_category(category):
+            valid_categories = [
+                "AI/Machine Learning",
+                "Big Data",
+                "Cloud Provider",
+                "Database",
+                "Integration & Delivery",
+                "Logging & Tracing",
+                "Monitoring",
+                "Networking",
+                "OpenShift Optional",
+                "Security",
+                "Storage",
+                "Streaming & Messaging"
+            ]
+            return category in valid_categories
+
         valid = True
 
         spec = csv["spec"]
@@ -517,5 +534,16 @@ class ValidateCmd():
             else:
                 self._log_error("spec.icon should be a list")
                 valid = False
+
+        # categories check
+        if "categories" in annotations:
+            categories = annotations["categories"].split(',')
+            for category in categories:
+                if not is_category(category.lstrip()):
+                    self._log_error(
+                        "category %s is not a valid category",
+                        category.lstrip()
+                    )
+                    valid = False
 
         return valid

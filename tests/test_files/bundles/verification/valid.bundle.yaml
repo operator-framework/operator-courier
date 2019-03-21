@@ -39,7 +39,7 @@ data:
                 }
               
             ]
-          categories: openshift required
+          categories: "Storage, Integration & Delivery"
           certified: 'true'
           containerImage: quay.io/openshift/origin-operator-marketplace:latest
           createdAt: 2019/11/15
