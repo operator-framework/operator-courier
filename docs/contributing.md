@@ -58,6 +58,14 @@ certain level. This is intended to ensure that all code changes submitted to
 this project are appropriately unit tested. For the current value, see the
 `[coverage:report]` section in `tox.ini`.
 
+In order to run integration tests for the `push` command, you will need to set 
+`QUAY_NAMESPACE` and `QUAY_ACCESS_TOKEN` environment variables locally, or add 
+them to tox.ini, for example
+
+    setenv =
+        QUAY_NAMESPACE = my_quay_namespace
+        QUAY_ACCESS_TOKEN = basic aBcDeFaBcDeFaBcDeFaBcDeFaBcDeF==
+
 
 ## Release, Deploy, and Clean the Project
 
