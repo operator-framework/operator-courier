@@ -15,6 +15,7 @@ from operatorcourier.validate import ValidateCmd
 from operatorcourier.push import PushCmd
 from operatorcourier.format import format_bundle
 from operatorcourier.nest import nest_bundles
+from operatorcourier.flatten import flatten_bundles
 from operatorcourier.errors import OpCourierBadBundle
 
 logger = logging.getLogger(__name__)
@@ -136,3 +137,18 @@ def nest(source_dir, registry_dir):
 
     with TemporaryDirectory() as temp_dir:
         nest_bundles(yaml_files, registry_dir, temp_dir)
+
+
+def flatten(source_dir, dest_dir):
+    """
+    Given a directory containing different versions of operator bundles
+    (CRD, CSV, package) in separate version directories, this function
+    copies all files needed to the flattened directory. It is the inverse
+    of the `nest` function.
+
+    :param source_dir: the directory containing different versions
+    of operator bundles (CRD, CSV, package) in separate version directories
+    :param dest_dir: the flattened directory path where all necessary files are copied
+    """
+    os.makedirs(dest_dir, exist_ok=True)
+    flatten_bundles(source_dir, dest_dir)

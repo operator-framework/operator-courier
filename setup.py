@@ -24,7 +24,8 @@ setup(
   install_requires=[
     'pyyaml',
     'requests',
-    'validators'
+    'validators',
+    'semver'
   ],
   python_requires='>=3.6, <4',
   setup_requires=['pytest-runner'],

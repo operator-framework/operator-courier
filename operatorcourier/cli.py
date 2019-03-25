@@ -35,6 +35,7 @@ These are the commands you can use:
     verify      Create a bundle and test it for correctness.
     push        Create a bundle, test it, and push it to an app registry.
     nest        Take a flat to-be-bundled directory and version nest it.
+    flatten     Create a flat directory from versioned operator bundle yaml files.
 ''')
         try:
             __version__ = pkg_resources.get_distribution('operator-courier').version
@@ -113,3 +114,24 @@ These are the commands you can use:
 
         args, leftovers = parser.parse_known_args(sys.argv[2:])
         api.nest(args.source_dir, args.registry_dir)
+
+    # Parse the flatten command
+    def flatten(self):
+        parser = argparse.ArgumentParser(
+            usage='operator-courier flatten [-h] source_dir dest_dir',
+            description='Given a directory with different versions of '
+                        'operator bundles (CRD, CSV, package), this command extracts '
+                        'versioned CSVs and the latest version of each CRD along with '
+                        'the package file and creates a new flat directory '
+                        'of yaml files. See https://github.com/operator-framework/'
+                        'operator-registry#manifest-format to find out more about '
+                        'how nested bundles should be structured.')
+        parser.add_argument('source_dir',
+                            help='Path of the source directory that contains different '
+                                 'versions of operator bundles (CRD, CSV, package)')
+        parser.add_argument('dest_dir',
+                            help='The new flat directory that contains '
+                                 'extracted bundle files')
+
+        args, leftovers = parser.parse_known_args(sys.argv[2:])
+        api.flatten(args.source_dir, args.dest_dir)
