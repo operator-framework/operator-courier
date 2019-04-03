@@ -114,7 +114,7 @@ def parse_version_folder(base_dir: str, version_folder_name: str,
                 msg = f'{item} is not a valid CRD file as "metadata.name" ' \
                       f'field is required'
                 logger.error(msg)
-                raise errors.OpCourierBadBundle(msg)
+                raise errors.OpCourierBadBundle(msg, {})
             # create new CRD type entry if not found in dict
             if crd_name not in crd_dict:
                 crd_dict[crd_name] = (version_folder_name, item_path)
@@ -125,7 +125,7 @@ def parse_version_folder(base_dir: str, version_folder_name: str,
     if not contains_csv:
         msg = 'This version directory does not contain any valid CSV file.'
         logger.error(msg)
-        raise errors.OpCourierBadBundle(msg)
+        raise errors.OpCourierBadBundle(msg, {})
 
 
 def get_package_path(base_dir: str, file_names_in_base_dir: list) -> str:
@@ -149,7 +149,7 @@ def get_package_path(base_dir: str, file_names_in_base_dir: list) -> str:
         else:
             msg = f'The input source directory expects only 1 valid package file.'
             logger.error(msg)
-            raise errors.OpCourierBadBundle(msg)
+            raise errors.OpCourierBadBundle(msg, {})
 
     return packages[0]
 
