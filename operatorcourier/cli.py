@@ -28,72 +28,114 @@ class _CliParser():
         """
         parser = argparse.ArgumentParser(
             description='Build, verify and push operator bundles into '
-                        'external app registry',
-            usage='''operator-courier <command> [<args>]
+                        'external app registry')
 
-These are the commands you can use:
-    verify      Create a bundle and test it for correctness.
-    push        Create a bundle, test it, and push it to an app registry.
-    nest        Take a flat to-be-bundled directory and version nest it.
-    flatten     Create a flat directory from versioned operator bundle yaml files.
-''')
         try:
             __version__ = pkg_resources.get_distribution('operator-courier').version
         except Exception:
             __version__ = 'unknown'
 
-        parser.add_argument('command', help='Subcommand to run')
-        parser.add_argument('-v', '--version',
-                            help='Show the current version of operator-courier',
-                            action='version', version=__version__)
+        parser.add_argument(
+            '-v', '--version',
+            help='Show the current version of operator-courier',
+            action='version', version=__version__)
 
-        args = parser.parse_args(sys.argv[1:2])
-        if not hasattr(self, args.command):
-            parser.error('Unrecognized command')
+        subparsers = parser.add_subparsers(title='subcommands')
 
-        getattr(self, args.command)()
-
-    # Parse the verify command
-    def verify(self):
-        parser = argparse.ArgumentParser(
+        verify_parser = subparsers.add_parser(
+            'verify',
+            help='Create a bundle and test it for correctness.',
             description='Build and verify an operator bundle to test')
-        parser.add_argument('source_dir', help='Path of your directory of yaml '
-                            'files to bundle. Either set this or '
-                            'use the files argument for bundle data.')
-        parser.add_argument('--ui_validate_io',
-                            help='Validate bundle for operatorhub.io UI. '
-                            'To visually confirm that your operator '
-                            'will be displayed correctly, please visit '
-                            'https://operatorhub.io/preview and paste '
-                            'your operator CSV.',
-                            action='store_true')
-        parser.add_argument('--validation-output', dest='validation_output',
-                            help='A file to write validation warnings and errors to'
-                                 'in JSON format')
-        args, leftovers = parser.parse_known_args(sys.argv[2:])
+        verify_parser.add_argument(
+            'source_dir',
+            help='Path of your directory of yaml files to bundle. '
+            'Either set this or use the files argument for bundle data.')
+        verify_parser.add_argument(
+            '--ui_validate_io',
+            help='Validate bundle for operatorhub.io UI. '
+            'To visually confirm that your operator will be displayed correctly, '
+            'please visit https://operatorhub.io/preview and paste '
+            'your operator CSV.',
+            action='store_true')
+        verify_parser.add_argument(
+            '--validation-output',
+            dest='validation_output',
+            help='A file to write validation warnings and errors to in JSON format')
+        verify_parser.set_defaults(func=self.verify)
+
+        push_parser = subparsers.add_parser(
+            'push',
+            help='Create a bundle, test it, and push it to an app registry.',
+            description='Build, verify and push an operator bundle '
+            'into external app registry.')
+        push_parser.add_argument(
+            'source_dir',
+            help='Path of your directory of yaml files to bundle.')
+        push_parser.add_argument(
+            'namespace',
+            help='Name of the Quay namespace to push operator to.')
+        push_parser.add_argument(
+            'repository',
+            help='Application repository name the application is bundled for.')
+        push_parser.add_argument(
+            'release',
+            help='The release version of the bundle.')
+        push_parser.add_argument(
+            'token',
+            help='Authorization token for Quay api.')
+        push_parser.add_argument(
+            '--validation-output',
+            dest='validation_output',
+            help='A file to write validation warnings and errors to in JSON format')
+        push_parser.set_defaults(func=self.push)
+
+        nest_parser = subparsers.add_parser(
+            'nest',
+            help='Take a flat to-be-bundled directory and version nest it.',
+            description='Take a flat bundle directory and version nest it '
+            'to eventually create an operator-registry image.')
+        nest_parser.add_argument(
+            'source_dir',
+            help='Path of your directory of yaml files to bundle.')
+        nest_parser.add_argument(
+            'registry_dir',
+            help='Path of your directory to be populated. '
+            'If directory does not exist, it will be created.')
+        nest_parser.set_defaults(func=self.nest)
+
+        flatten_parser = subparsers.add_parser(
+            'flatten',
+            help='Create a flat directory from versioned operator bundle yaml files.',
+            description='Given a directory with different versions of '
+            'operator bundles (CRD, CSV, package), this command extracts '
+            'versioned CSVs and the latest version of each CRD along with '
+            'the package file and creates a new flat directory '
+            'of yaml files. See https://github.com/operator-framework/'
+            'operator-registry#manifest-format to find out more about '
+            'how nested bundles should be structured.')
+        flatten_parser.add_argument(
+            'source_dir',
+            help='Path of the source directory that contains different '
+            'versions of operator bundles (CRD, CSV, package)')
+        flatten_parser.add_argument(
+            'dest_dir',
+            help='The new flat directory that contains '
+            'extracted bundle files')
+        flatten_parser.set_defaults(func=self.flatten)
+
+        args = parser.parse_args()
+        args.func(args)
+
+    def verify(self, args):
+        """Run the verify command
+        """
         api.build_and_verify(source_dir=args.source_dir,
                              ui_validate_io=args.ui_validate_io,
                              validation_output=args.validation_output)
 
-    # Parse the push command
-    def push(self):
-        parser = argparse.ArgumentParser(
-            description='Build, verify and push an operator bundle '
-                        'into external app registry.')
-        parser.add_argument('source_dir',
-                            help='Path of your directory of yaml files to bundle.')
-        parser.add_argument('namespace',
-                            help='Name of the Quay namespace to push operator to.')
-        parser.add_argument('repository',
-                            help='Application repository name '
-                                 'the application is bundled for.')
-        parser.add_argument('release',
-                            help='The release version of the bundle.')
-        parser.add_argument('token', help='Authorization token for Quay api.')
-        parser.add_argument('--validation-output', dest='validation_output',
-                            help='A file to write validation warnings and errors to'
-                                 'in JSON format')
-        args, leftovers = parser.parse_known_args(sys.argv[2:])
+    def push(self, args):
+        """Run the push command
+        """
         api.build_verify_and_push(args.namespace,
                                   args.repository,
                                   args.release,
@@ -101,37 +143,12 @@ These are the commands you can use:
                                   source_dir=args.source_dir,
                                   validation_output=args.validation_output)
 
-    # Parse the nest command
-    def nest(self):
-        parser = argparse.ArgumentParser(
-            description='Take a flat bundle directory and version nest it '
-                        'to eventually create an operator-registry image.')
-        parser.add_argument('source_dir',
-                            help='Path of your directory of yaml files to bundle.')
-        parser.add_argument('registry_dir',
-                            help='Path of your directory to be populated. '
-                                 'If directory does not exist, it will be created.')
-
-        args, leftovers = parser.parse_known_args(sys.argv[2:])
+    def nest(self, args):
+        """Run the nest command
+        """
         api.nest(args.source_dir, args.registry_dir)
 
-    # Parse the flatten command
-    def flatten(self):
-        parser = argparse.ArgumentParser(
-            usage='operator-courier flatten [-h] source_dir dest_dir',
-            description='Given a directory with different versions of '
-                        'operator bundles (CRD, CSV, package), this command extracts '
-                        'versioned CSVs and the latest version of each CRD along with '
-                        'the package file and creates a new flat directory '
-                        'of yaml files. See https://github.com/operator-framework/'
-                        'operator-registry#manifest-format to find out more about '
-                        'how nested bundles should be structured.')
-        parser.add_argument('source_dir',
-                            help='Path of the source directory that contains different '
-                                 'versions of operator bundles (CRD, CSV, package)')
-        parser.add_argument('dest_dir',
-                            help='The new flat directory that contains '
-                                 'extracted bundle files')
-
-        args, leftovers = parser.parse_known_args(sys.argv[2:])
+    def flatten(self, args):
+        """Parse the flatten command
+        """
         api.flatten(args.source_dir, args.dest_dir)
