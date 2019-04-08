@@ -19,6 +19,33 @@ class ValidateCmd():
     csvKey = "clusterServiceVersions"
     pkgsKey = "packages"
 
+    err_invalid_category = 'invalid_category'
+    err_missing_owned_crd_field_in_csv = 'missing_owned_crd_field_in_csv'
+    err_invalid_alm_examples = 'invalid_alm_examples'
+    err_missing_field_for_operatorhub_io = 'missing_field_for_operatorhub_io'
+    err_csv_field_issue = 'csv_field_issue'
+
+    err_message_kind_to_ref_urls = {
+        err_invalid_category: ['https://github.com/operator-framework/community-operators'
+                               '/blob/master/docs/required-fields.md#categories'],
+        err_missing_owned_crd_field_in_csv: ['https://github.com/operator-framework/'
+                                             'operator-lifecycle-manager/blob/master/'
+                                             'Documentation/design/building-your-csv.md'
+                                             '#owned-crds'],
+        err_invalid_alm_examples: ['https://github.com/operator-framework/'
+                                   'operator-lifecycle-manager/blob/master/Documentation/'
+                                   'design/building-your-csv.md#crd-templates'],
+        err_missing_field_for_operatorhub_io: ['https://github.com/operator-framework/'
+                                               'community-operators/blob/master/docs/'
+                                               'required-fields.md#'
+                                               'required-fields-for-operatorhubio'],
+        err_csv_field_issue: ['https://github.com/operator-framework/community-'
+                              'operators/blob/master/docs/required-fields.md',
+                              'https://github.com/operator-framework/operator-'
+                              'lifecycle-manager/blob/master/Documentation/design/'
+                              'building-your-csv.md']
+    }
+
     def __init__(self, ui_validate_io=False):
         self.ui_validate_io = ui_validate_io
         self.validation_json = dict(
@@ -36,12 +63,17 @@ class ValidateCmd():
         self.validation_json['warnings'].append(message % args)
         logger.warning(message, *args, **kwargs)
 
-    def _log_error(self, message, *args, **kwargs):
+    def _log_error(self, message, message_kind='', *args, **kwargs):
         """_log_error prints the message to the logger as an error
         and appends it to a dictionary that can be printed to the
         screen for automation purposes
          :param message: The message to log
         """
+        if message_kind in self.err_message_kind_to_ref_urls:
+            message += ' See links below for more details and examples:\n'
+            for url in self.err_message_kind_to_ref_urls[message_kind]:
+                message += f'\n{url}'
+
         self.validation_json['errors'].append(message % args)
         logger.error(message, *args, **kwargs)
 
@@ -79,9 +111,9 @@ class ValidateCmd():
         if validationDict[self.pkgsKey] and repository is not None:
             packageName = bundleData['packages'][0]['packageName']
             if repository != packageName:
-                self._log_error('The packageName (%s) in bundle does not match '
-                                'repository name (%s) provided as command line argument.',
-                                packageName, repository)
+                self._log_error(f'The packageName ({packageName}) in bundle does not '
+                                f'match repository name ({repository}) provided '
+                                f'as command line argument.')
                 validationDict[self.pkgsKey] = False
 
         valid = True
@@ -146,18 +178,21 @@ class ValidateCmd():
                 if self._csv_metadata_validation(csv["metadata"]) is False:
                     valid = False
             else:
-                self._log_error("csv metadata not defined.")
+                self._log_error("csv metadata not defined.",
+                                self.err_csv_field_issue)
                 valid = False
 
             if "apiVersion" not in csv:
-                self._log_error("csv apiVersion not defined.")
+                self._log_error("csv apiVersion not defined.",
+                                self.err_csv_field_issue)
                 valid = False
 
             if "spec" in csv:
                 if self._csv_spec_validation(csv["spec"], bundleData) is False:
                     valid = False
             else:
-                self._log_error("csv spec not defined.")
+                self._log_error("csv spec not defined.",
+                                self.err_csv_field_issue)
                 valid = False
 
         return valid
@@ -173,11 +208,13 @@ class ValidateCmd():
                 self._log_warning("csv spec.%s not defined" % item)
 
         if "installModes" not in spec:
-            self._log_error("csv spec.installModes not defined")
+            self._log_error("csv spec.installModes not defined.",
+                            self.err_csv_field_issue)
             valid = False
 
         if "install" not in spec:
-            self._log_error("csv spec.install not defined")
+            self._log_error("csv spec.install not defined.",
+                            self.err_csv_field_issue)
             valid = False
 
         if "customresourcedefinitions" in spec:
@@ -192,28 +229,33 @@ class ValidateCmd():
                     pass
 
             if "owned" not in customresourcedefinitions:
-                self._log_error("spec.customresourcedefinitions.owned"
-                                "not defined for csv")
+                self._log_error("spec.customresourcedefinitions.owned "
+                                "not defined for csv.",
+                                self.err_missing_owned_crd_field_in_csv)
                 return False
 
             for csvOwnedCrd in customresourcedefinitions["owned"]:
                 if "name" not in csvOwnedCrd:
                     self._log_error("name not defined for item in "
-                                    "spec.customresourcedefinitions.")
+                                    "spec.customresourcedefinitions.",
+                                    self.err_missing_owned_crd_field_in_csv)
                     valid = False
                 elif csvOwnedCrd["name"] not in crdList:
-                    self._log_error("custom resource definition %s referenced in csv "
-                                    "not defined in root list of crds",
-                                    csvOwnedCrd["name"])
+                    self._log_error(f'custom resource definition {csvOwnedCrd["name"]} '
+                                    f'referenced in csv not defined '
+                                    f'in root list of crds.',
+                                    self.err_missing_owned_crd_field_in_csv)
                     valid = False
 
                 if "kind" not in csvOwnedCrd:
                     self._log_error("kind not defined for item in "
-                                    "spec.customresourcedefinitions.")
+                                    "spec.customresourcedefinitions.",
+                                    self.err_missing_owned_crd_field_in_csv)
                     valid = False
                 if "version" not in csvOwnedCrd:
                     self._log_error("version not defined for item in "
-                                    "spec.customresourcedefinitions.")
+                                    "spec.customresourcedefinitions.",
+                                    self.err_missing_owned_crd_field_in_csv)
                     valid = False
 
                 for crd in bundleData[self.crdKey]:
@@ -262,7 +304,8 @@ class ValidateCmd():
         if "name" in metadata:
             logger.info("Evaluating csv %s", metadata["name"])
         else:
-            self._log_error("csv metadata.name not defined.")
+            self._log_error("csv metadata.name not defined.",
+                            self.err_csv_field_issue)
             valid = False
 
         if "annotations" in metadata:
@@ -291,7 +334,8 @@ class ValidateCmd():
                     json.loads(annotations["alm-examples"])
                 except KeyError:
                     self._log_error("metadata.annotations.alm-examples contains "
-                                    "invalid json string")
+                                    "invalid json string.",
+                                    self.err_invalid_alm_examples)
                     valid = False
 
         else:
@@ -307,8 +351,8 @@ class ValidateCmd():
 
         num_pkgs = len(pkgs)
         if num_pkgs != 1:
-            self._log_error('Only 1 package is expected to exist per bundle, but got %d.',
-                            num_pkgs)
+            self._log_error(f'Only 1 package is expected to exist per bundle, '
+                            f'but got {num_pkgs}.')
             return False
 
         pkg = pkgs[0]
@@ -341,9 +385,8 @@ class ValidateCmd():
                         self._log_error("package channel.currentCSV not defined.")
                     else:
                         if channel["currentCSV"] not in csvNames:
-                            self._log_error("channel.currentCSV %s is not "
-                                            "included in list of csvs",
-                                            channel["currentCSV"])
+                            self._log_error(f'channel.currentCSV {channel["currentCSV"]}'
+                                            f' is not included in list of csvs')
                             valid = False
 
         else:
@@ -358,10 +401,10 @@ class ValidateCmd():
             if len(bundleData[typeName]) != 0:
                 valid = validator(bundleData)
             elif required:
-                self._log_error("Bundle does not contain any %s." % typeName)
+                self._log_error(f"Bundle does not contain any {typeName}.")
                 valid = False
         elif required:
-            self._log_error("Bundle does not contain any %s." % typeName)
+            self._log_error(f"Bundle does not contain any {typeName}.")
             valid = False
 
         return valid
@@ -390,51 +433,57 @@ class ValidateCmd():
         valid = True
 
         if "metadata" not in csv:
-            self._log_error("csv metadata not defined.")
+            self._log_error("csv metadata not defined.",
+                            self.err_csv_field_issue)
             valid = False
         else:
             if "name" not in csv["metadata"]:
-                self._log_error("csv metadata.name not defined.")
+                self._log_error("csv metadata.name not defined.",
+                                self.err_csv_field_issue)
                 valid = False
             else:
                 logger.info("Evaluating csv %s", csv["metadata"]["name"])
 
                 for field in general_required_fields:
                     if field not in csv:
-                        self._log_error("csv %s not defined.", field)
+                        self._log_error(f"csv {field} not defined.",
+                                        self.err_csv_field_issue)
                         valid = False
                         return valid
 
                 for field in metadata_required_fields:
                     if field["field"] not in csv["metadata"]:
                         if field["required"]:
-                            self._log_error("csv metadata.%s not defined. %s",
-                                            field["field"], field["description"])
+                            self._log_error(f'csv metadata.{field["field"]} not defined. '
+                                            f'{field["description"]}',
+                                            self.err_missing_field_for_operatorhub_io)
                             valid = False
                             return valid
                         else:
-                            self._log_warning("csv metadata.%s not defined. %s",
-                                              field["field"], field["description"])
+                            self._log_warning(f'csv metadata.{field["field"]} not '
+                                              f'defined. {field["description"]}')
 
                 for field in metadata_annotations_required_fields:
                     if field["field"] not in csv["metadata"]["annotations"]:
                         if field["required"]:
-                            self._log_error("csv metadata.annotations.%s not defined. %s",
-                                            field["field"], field["description"])
+                            self._log_error(f'csv metadata.annotations.{field["field"]} '
+                                            f'not defined. {field["description"]}',
+                                            self.err_missing_field_for_operatorhub_io)
                             valid = False
                         else:
-                            self._log_warning("csv metadata.annotations.%s not defined."
-                                              "%s", field["field"], field["description"])
+                            self._log_warning(f'csv metadata.annotations.{field["field"]}'
+                                              f' not defined. {field["description"]}')
 
                 for field in spec_required_fields:
                     if field["field"] not in csv["spec"]:
                         if field["required"]:
-                            self._log_error("csv spec.%s not defined. %s",
-                                            field["field"], field["description"])
+                            self._log_error(f'csv spec.{field["field"]} not defined. '
+                                            f'{field["description"]}',
+                                            self.err_missing_field_for_operatorhub_io)
                             valid = False
                         else:
-                            self._log_warning("csv spec.%s not defined. %s",
-                                              field["field"], field["description"])
+                            self._log_warning(f'csv spec.{field["field"]} not defined. '
+                                              f'{field["description"]}')
 
         return valid
 
@@ -507,26 +556,31 @@ class ValidateCmd():
                     alm_kinds = get_alm_kinds(json.loads(annotations["alm-examples"]))
                     for crd in crds:
                         if crd["kind"] not in alm_kinds:
-                            self._log_error("%s CRD does not have an entry in "
-                                            "alm-examples - please add such an "
-                                            "example CR.", crd["kind"])
+                            self._log_error(f'{crd["kind"]} CRD does not have an entry '
+                                            f'in alm-examples - please add such an '
+                                            f'example CR.',
+                                            self.err_invalid_alm_examples)
                             valid = False
                 else:
-                    self._log_error("You should have alm-examples for every owned CRD")
+                    self._log_error("You should have alm-examples for every owned CRD.",
+                                    self.err_invalid_alm_examples)
                     valid = False
 
         # provider check
         if isinstance(provider, (dict,)):
             if len(provider) != 1:
-                self._log_error("csv.spec.provider should be a singleton list.")
+                self._log_error("csv.spec.provider should be a singleton list.",
+                                self.err_csv_field_issue)
                 valid = False
             else:
                 if "name" not in provider or len(provider.keys()) != 1:
                     self._log_error("csv.spec.provider element should "
-                                    "have a single field \"name\".")
+                                    "have a single field \"name\".",
+                                    self.err_csv_field_issue)
                     valid = False
         else:
-            self._log_error("csv.spec.provider should contain a \"name\" field.")
+            self._log_error("csv.spec.provider should contain a \"name\" field.",
+                            self.err_csv_field_issue)
             valid = False
 
         # maintainers check
@@ -534,14 +588,16 @@ class ValidateCmd():
             for maintainer in spec["maintainers"]:
                 if "name" not in maintainer or "email" not in maintainer:
                     self._log_error("csv.spec.maintainers element should contain "
-                                    "both name and email")
+                                    "both name and email.",
+                                    self.err_csv_field_issue)
                     valid = False
                 else:
                     if not is_email(maintainer["email"]):
-                        self._log_error("%s is not a valid email", maintainer["email"])
+                        self._log_error(f'{maintainer["email"]} is not a valid email')
                         valid = False
         else:
-            self._log_error("csv.spec.maintainers must be a list of name & email pairs.")
+            self._log_error("csv.spec.maintainers must be a list of name & email pairs.",
+                            self.err_csv_field_issue)
             valid = False
 
         # links check
@@ -549,27 +605,30 @@ class ValidateCmd():
             for link in spec["links"]:
                 if "name" not in link or "url" not in link:
                     self._log_error("csv.spec.links element should contain "
-                                    "both name and url")
+                                    "both name and url.",
+                                    self.err_csv_field_issue)
                     valid = False
                 else:
                     if not is_url(link["url"]):
-                        self._log_error("%s is not a valid url", link["url"])
+                        self._log_error(f'{link["url"]} is not a valid url')
                         valid = False
         else:
-            self._log_error("csv.spec.links must be a list of name & url pairs.")
+            self._log_error("csv.spec.links must be a list of name & url pairs.",
+                            self.err_csv_field_issue)
             valid = False
 
         # version check
         if not is_version(spec["version"]):
-            self._log_error("spec.version %s is not a valid semver "
-                            "(example of a valid semver is: 1.0.12)",
-                            spec["version"])
+            self._log_error(f'spec.version {spec["version"]} is not a valid semver '
+                            f'(example of a valid semver is: 1.0.12)')
             valid = False
 
         # capabilities check
         if not is_capability_level(annotations["capabilities"]):
-            self._log_error("metadata.annotations.capabilities %s is not a "
-                            "valid capabilities level", annotations["capabilities"])
+            self._log_error(f'metadata.annotations.capabilities '
+                            f'{annotations["capabilities"]} is not a '
+                            f'valid capabilities level.',
+                            self.err_missing_field_for_operatorhub_io)
             valid = False
 
         # icon check
@@ -582,24 +641,29 @@ class ValidateCmd():
                         if "base64data" in icon and "mediatype" in icon:
                             if not is_mediatype(icon["mediatype"]):
                                 self._log_error(
-                                    "spec.icon[0].mediatype %s is not a valid mediatype. "
-                                    "It must be one of \"image/gif\", \"image/jpeg\", "
-                                    "\"image/png\", \"image/svg+xml\"", icon["mediatype"]
+                                    f'spec.icon[0].mediatype {icon["mediatype"]} is not '
+                                    f'a valid mediatype. It must be one of "image/gif", '
+                                    f'"image/jpeg", "image/png", "image/svg+xml".',
+                                    self.err_missing_field_for_operatorhub_io
                                 )
                                 valid = False
                         else:
                             self._log_error("spec.icon[0] must contain the fields "
-                                            "\"base64data\" and \"mediatype\".")
+                                            "\"base64data\" and \"mediatype\".",
+                                            self.err_missing_field_for_operatorhub_io)
                             valid = False
                     else:
                         self._log_error("spec.icon can only contain two fields: "
-                                        "\"base64data\" and \"mediatype\"")
+                                        "\"base64data\" and \"mediatype\".",
+                                        self.err_missing_field_for_operatorhub_io)
                         valid = False
                 else:
-                    self._log_error("spec.icon should be a singleton list")
+                    self._log_error("spec.icon should be a singleton list.",
+                                    self.err_missing_field_for_operatorhub_io)
                     valid = False
             else:
-                self._log_error("spec.icon should be a list")
+                self._log_error("spec.icon should be a list.",
+                                self.err_missing_field_for_operatorhub_io)
                 valid = False
 
         # categories check
@@ -608,8 +672,8 @@ class ValidateCmd():
             for category in categories:
                 if not is_category(category.lstrip()):
                     self._log_error(
-                        "category %s is not a valid category",
-                        category.lstrip()
+                        f"category {category.lstrip()} is not a valid category.",
+                        self.err_invalid_category
                     )
                     valid = False
 

@@ -49,15 +49,38 @@ def test_ui_valid_bundle_io(bundle, expected_validation_results_dict):
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
         ("tests/test_files/bundles/verification/ui.invalid.bundle.yaml",
             {'errors': [
-                "csv.spec.links must be a list of name & url pairs.",
+                "csv.spec.links must be a list of name & url pairs. "
+                "See links below for more details and examples:"
+                "\n\n"
+                "https://github.com/operator-framework/community-operators/"
+                "blob/master/docs/required-fields.md\n"
+                "https://github.com/operator-framework/operator-lifecycle-manager/"
+                "blob/master/Documentation/design/building-your-csv.md",
+
                 "spec.version invalid is not a valid semver "
                 "(example of a valid semver is: 1.0.12)",
+
                 "metadata.annotations.capabilities invalid "
-                "is not a valid capabilities level",
+                "is not a valid capabilities level. See links below "
+                "for more details and examples:"
+                "\n\n"
+                "https://github.com/operator-framework/community-operators/"
+                "blob/master/docs/required-fields.md#required-fields-for-operatorhubio",
+
                 "spec.icon[0].mediatype image/invalid is not "
-                "a valid mediatype. It must be one of \"image/gif\", "
-                "\"image/jpeg\", \"image/png\", \"image/svg+xml\"",
-                "category invalid is not a valid category",
+                'a valid mediatype. It must be one of "image/gif", '
+                '"image/jpeg", "image/png", "image/svg+xml". See links below '
+                "for more details and examples:"
+                "\n\n"
+                "https://github.com/operator-framework/community-operators/"
+                "blob/master/docs/required-fields.md#required-fields-for-operatorhubio",
+
+                "category invalid is not a valid category. See links below "
+                "for more details and examples:"
+                "\n\n"
+                "https://github.com/operator-framework/community-operators/blob/"
+                "master/docs/required-fields.md#categories",
+
                 "UI validation failed to verify that required fields "
                 "for operatorhub.io are properly formatted."
                 ],
@@ -138,13 +161,25 @@ def get_bundle(bundle):
 
     ('tests/test_files/bundles/verification/csvmissingkindfield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'kind not defined for item in spec.customresourcedefinitions.')),
+      'kind not defined for item in spec.customresourcedefinitions. See links below '
+      'for more details and examples:'
+      '\n\n'
+      'https://github.com/operator-framework/operator-lifecycle-manager/blob/master/'
+      'Documentation/design/building-your-csv.md#owned-crds')),
     ('tests/test_files/bundles/verification/csvmissingnamefield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'name not defined for item in spec.customresourcedefinitions.')),
+      'name not defined for item in spec.customresourcedefinitions. See links below '
+      'for more details and examples:'
+      '\n\n'
+      'https://github.com/operator-framework/operator-lifecycle-manager/blob/master/'
+      'Documentation/design/building-your-csv.md#owned-crds')),
     ('tests/test_files/bundles/verification/csvmissingversionfield.invalid.bundle.yaml',
      ('operatorcourier.validate', 'ERROR',
-      'version not defined for item in spec.customresourcedefinitions.')),
+      'version not defined for item in spec.customresourcedefinitions. See links below '
+      'for more details and examples:'
+      '\n\n'
+      'https://github.com/operator-framework/operator-lifecycle-manager/blob/master/'
+      'Documentation/design/building-your-csv.md#owned-crds')),
 ])
 def test_invalid_bundle_missing_fields(bundleFile, logInfo):
     _test_invalid_bundle_with_log(bundleFile, logInfo)
