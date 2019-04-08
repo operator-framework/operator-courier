@@ -2,17 +2,20 @@ import argparse
 import pkg_resources
 import sys
 import logging
+import traceback
+
 from operatorcourier import api
 
 
 def main():
     """Generate the CLI bits
     """
-    logging.basicConfig()
     try:
         parser = _CliParser()
         parser.parse()
     except Exception as e:  # Exception raised to CLI should not be thrown to users,
+        logger = logging.getLogger(__name__)
+        logger.debug("Exit traceback: %s", traceback.format_exc())
         sys.exit(str(e))    # it should just be captured by logs
 
 
@@ -39,6 +42,10 @@ class _CliParser():
             '-v', '--version',
             help='Show the current version of operator-courier',
             action='version', version=__version__)
+        parser.add_argument(
+            '--verbose', dest='verbose',
+            help="Provide detailed logs",
+            action='store_true', default=False)
 
         subparsers = parser.add_subparsers(title='subcommands')
 
@@ -124,6 +131,10 @@ class _CliParser():
         flatten_parser.set_defaults(func=self.flatten)
 
         args = parser.parse_args()
+        logging.basicConfig(
+            level=logging.DEBUG if args.verbose else logging.WARNING
+        )
+
         args.func(args)
 
     def verify(self, args):
