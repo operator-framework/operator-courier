@@ -68,6 +68,11 @@ class _CliParser():
             '--validation-output',
             dest='validation_output',
             help='A file to write validation warnings and errors to in JSON format')
+        verify_parser.add_argument(
+            '--output',
+            dest='output',
+            help='Option that, if set, creates a file which contains the yaml bundle '
+            'generated from the input files. Takes a path to write the file to.')
         verify_parser.set_defaults(func=self.verify)
 
         push_parser = subparsers.add_parser(
@@ -94,6 +99,11 @@ class _CliParser():
             '--validation-output',
             dest='validation_output',
             help='A file to write validation warnings and errors to in JSON format')
+        push_parser.add_argument(
+            '--output',
+            dest='output',
+            help='Option that, if set, creates a file which contains the yaml bundle '
+            'generated from the input files. Takes a path to write the file to.')
         push_parser.set_defaults(func=self.push)
 
         nest_parser = subparsers.add_parser(
@@ -142,7 +152,8 @@ class _CliParser():
         """
         api.build_and_verify(source_dir=args.source_dir,
                              ui_validate_io=args.ui_validate_io,
-                             validation_output=args.validation_output)
+                             validation_output=args.validation_output,
+                             output=args.output)
 
     def push(self, args):
         """Run the push command
@@ -152,7 +163,8 @@ class _CliParser():
                                   args.release,
                                   args.token,
                                   source_dir=args.source_dir,
-                                  validation_output=args.validation_output)
+                                  validation_output=args.validation_output,
+                                  output=args.output)
 
     def nest(self, args):
         """Run the nest command

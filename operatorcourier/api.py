@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
-                     validation_output=None, repository=None):
+                     validation_output=None, repository=None, output=None):
     """Build and verify constructs an operator bundle from
     a set of files and then verifies it for usefulness and accuracy.
 
@@ -67,6 +67,9 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
     if valid:
         bundle = format_bundle(bundle)
+        if output is not None:
+            with open(output, 'w') as f:
+                yaml.dump(bundle, f, default_flow_style=False)
         return bundle
     else:
         logger.error("Bundle failed validation.")
@@ -78,7 +81,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
 def build_verify_and_push(namespace, repository, revision, token,
                           source_dir=None, yamls=None,
-                          validation_output=None):
+                          validation_output=None, output=None):
     """Build verify and push constructs the operator bundle,
     verifies it, and pushes it to an external app registry.
     Currently the only supported app registry is the one
@@ -105,7 +108,7 @@ def build_verify_and_push(namespace, repository, revision, token,
     """
 
     bundle = build_and_verify(source_dir, yamls, repository=repository,
-                              validation_output=validation_output)
+                              validation_output=validation_output, output=output)
 
     with TemporaryDirectory() as temp_dir:
         with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
