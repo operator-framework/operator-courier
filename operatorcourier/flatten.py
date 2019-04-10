@@ -151,6 +151,11 @@ def get_package_path(base_dir: str, file_names_in_base_dir: list) -> str:
             logger.error(msg)
             raise errors.OpCourierBadBundle(msg, {})
 
+    if not packages:
+        msg = f'The input source directory expects at least 1 valid package file.'
+        logger.error(msg)
+        raise errors.OpCourierBadBundle(msg, {})
+
     return packages[0]
 
 
