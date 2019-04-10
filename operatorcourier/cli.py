@@ -145,7 +145,12 @@ class _CliParser():
             level=logging.DEBUG if args.verbose else logging.WARNING
         )
 
-        args.func(args)
+        func = getattr(args, 'func', None)
+        if callable(func):
+            func(args)
+        else:
+            parser.print_help(sys.stderr)
+            sys.exit(2)
 
     def verify(self, args):
         """Run the verify command
