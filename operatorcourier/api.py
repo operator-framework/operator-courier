@@ -51,7 +51,7 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     if source_dir is not None:
         for filename in os.listdir(source_dir):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
-                with open(source_dir + "/" + filename) as f:
+                with open(os.path.join(source_dir, filename)) as f:
                     yaml_files.append(f.read())
     elif yamls is not None:
         yaml_files = yamls
@@ -111,7 +111,7 @@ def build_verify_and_push(namespace, repository, revision, token,
                               validation_output=validation_output, output=output)
 
     with TemporaryDirectory() as temp_dir:
-        with open('%s/bundle.yaml' % temp_dir, 'w') as outfile:
+        with open(os.path.join(temp_dir, 'bundle.yaml'), 'w') as outfile:
             yaml.dump(bundle, outfile, default_flow_style=False)
             outfile.flush()
 
@@ -135,7 +135,7 @@ def nest(source_dir, registry_dir):
     if source_dir is not None:
         for filename in os.listdir(source_dir):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
-                with open(source_dir + "/" + filename) as f:
+                with open(os.path.join(source_dir, filename)) as f:
                     yaml_files.append(f.read())
 
     with TemporaryDirectory() as temp_dir:

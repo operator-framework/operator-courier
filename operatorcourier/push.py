@@ -1,3 +1,4 @@
+import os
 import base64
 import requests
 import tarfile
@@ -32,7 +33,7 @@ class PushCmd():
 
     def _create_base64_bundle(self, bundle_dir, repository):
         with TemporaryDirectory() as temp_dir:
-            tarfile_name = "%s/%s.tar.gz" % (temp_dir, repository)
+            tarfile_name = os.path.join(temp_dir, "%s.tar.gz" % repository)
             with tarfile.open(tarfile_name, "w:gz") as tar:
                 tar.add(bundle_dir, "")
             with open(tarfile_name, "rb") as tarball:
