@@ -27,10 +27,14 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
     """
 
     # extract package file and version folders from source_dir
-    _, folder_names, file_names = next(os.walk(source_dir))
+    root, folder_names, file_names = next(os.walk(source_dir))
     if not folder_names:
         logger.info('The source directory is already flat.')
-        return []
+        # just return files from dir as they are already flat
+        return [
+            (os.path.join(root, name), name)
+            for name in file_names
+        ]
 
     file_paths_to_copy = []  # [ (SRC_FILE_PATH, NEW_FILE_NAME) ]
 
