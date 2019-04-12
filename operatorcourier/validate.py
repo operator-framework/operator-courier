@@ -85,7 +85,7 @@ class ValidateCmd():
                 validationDict[self.pkgsKey] = False
 
         valid = True
-        for key, value in validationDict.items():
+        for value in validationDict.values():
             if value is False:
                 valid = False
 

@@ -38,7 +38,8 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
 
     # write the package file
     package_name = package["packageName"]
-    with open('%s/%s.package.yaml' % (temp_registry_dir, package_name), 'w') as outfile:
+    packagefile_name = os.path.join(temp_registry_dir, '%s.package.yaml' % package_name)
+    with open(packagefile_name, 'w') as outfile:
         yaml.dump(package, outfile, default_flow_style=False)
         outfile.flush()
 
@@ -62,7 +63,8 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
             crd_name = csv_crd["name"]
             if crd_name in crds:
                 crd = crds[crd_name]
-                with open('%s/%s.crd.yaml' % (csv_folder, crd_name), 'w') as outfile:
+                crdfile_name = os.path.join(csv_folder, '%s.crd.yaml' % crd_name)
+                with open(crdfile_name, 'w') as outfile:
                     yaml.dump(crd, outfile, default_flow_style=False)
                     outfile.flush()
             else:
