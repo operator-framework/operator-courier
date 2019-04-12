@@ -176,7 +176,10 @@ class ValidateCmd():
             self._log_error("csv spec.installModes not defined")
             valid = False
 
-        if "install" not in spec:
+        if "install" in spec:
+            if self._csv_spec_install_validation(spec["install"]) is False:
+                valid = False
+        else:
             self._log_error("csv spec.install not defined")
             valid = False
 
@@ -254,6 +257,59 @@ class ValidateCmd():
                                                         "match "
                                                         "CSV.spec.crd.owned.name")
                                         valid = False
+        return valid
+
+    def _csv_spec_install_validation(self, install):
+        valid = True
+
+        wantStrategyList = ["deployment"]
+
+        # strategy check (required)
+        if "strategy" in install:
+            if install["strategy"] not in wantStrategyList:
+                self._log_error(
+                    "csv spec.install.strategy must be one of %s" % wantStrategyList)
+                valid = False
+        else:
+            self._log_error("csv spec.install.strategy not defined")
+            valid = False
+
+        # spec check (required)
+        if "spec" in install:
+            # deployments check (required)
+            if "deployments" in install["spec"]:
+                deployments = install["spec"]["deployments"]
+                if not isinstance(deployments, (list,)):
+                    self._log_error(
+                        "csv spec.install.spec.deployments should be a list")
+                    valid = False
+            else:
+                self._log_error("csv spec.install.spec.deployments not defined")
+
+            # permissions check (optional)
+            try:
+                permissions = install["spec"]["permissions"]
+                if not isinstance(permissions, (list,)):
+                    self._log_error("csv spec.install.spec.permissions should be a list")
+                    valid = False
+            except KeyError:
+                pass
+
+            # clusterPermissions check (optional)
+            try:
+                clusterPermissions = install["spec"]["clusterPermissions"]
+                if not isinstance(clusterPermissions, (list,)):
+                    self._log_error(
+                        "csv spec.install.spec.clusterPermissions should be a list"
+                    )
+                    valid = False
+            except KeyError:
+                pass
+
+        else:
+            self._log_error("csv spec.install.spec not defined")
+            valid = False
+
         return valid
 
     def _csv_metadata_validation(self, metadata):
