@@ -8,15 +8,12 @@ when using the operator-courier package
 import os
 import logging
 from tempfile import TemporaryDirectory
+from distutils.dir_util import copy_tree
 import yaml
-import json
-from operatorcourier.build import BuildCmd
-from operatorcourier.validate import ValidateCmd
+from operatorcourier.verified_manifest import VerifiedManifest
 from operatorcourier.push import PushCmd
-from operatorcourier.format import format_bundle
 from operatorcourier.nest import nest_bundles
 from operatorcourier.flatten import flatten_bundles
-from operatorcourier.errors import OpCourierBadBundle
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +23,9 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     """Build and verify constructs an operator bundle from
     a set of files and then verifies it for usefulness and accuracy.
 
-    It returns the bundle as a string.
+    This API verifies the input source_dir or yamls and returns a verification
+    object which contains a nested boolean that indicates if the source_dir
+    is nested or not, and a bundle dictionary if the source_dir is in the flat structure.
 
     :param source_dir: Path to local directory of yaml files to be read.
     :param yamls: List of yaml strings to create bundle with
@@ -41,39 +40,17 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     :raises OpCourierBadBundle: When the resulting bundle fails validation
     """
 
-    if source_dir is not None and yamls is not None:
-        logger.error("Both source_dir and yamls cannot be defined.")
-        raise TypeError(
-            "Both source_dir and yamls cannot be specified on function call.")
+    if source_dir and yamls:
+        msg = 'source_dir and yamls cannot both be specified.'
+        logger.error(msg)
+        raise TypeError(msg)
 
-    yaml_files = []
+    verified_manifest = VerifiedManifest(source_dir, yamls, ui_validate_io, repository)
 
-    if source_dir is not None:
-        for filename in os.listdir(source_dir):
-            if filename.endswith(".yaml") or filename.endswith(".yml"):
-                with open(os.path.join(source_dir, filename)) as f:
-                    yaml_files.append(f.read())
-    elif yamls is not None:
-        yaml_files = yamls
+    if validation_output:
+        verified_manifest.write_validation_to_file(validation_output)
 
-    bundle = BuildCmd().build_bundle(yaml_files)
-
-    valid, validation_results_dict = ValidateCmd(ui_validate_io).validate(bundle,
-                                                                          repository)
-
-    if validation_output is not None:
-        with open(validation_output, 'w') as f:
-            f.write(json.dumps(validation_results_dict) + "\n")
-
-    if valid:
-        bundle = format_bundle(bundle)
-        return bundle
-    else:
-        logger.error("Bundle failed validation.")
-        raise OpCourierBadBundle(
-            "Resulting bundle is invalid, input yaml is improperly defined.",
-            validation_info=validation_results_dict
-        )
+    return verified_manifest
 
 
 def build_verify_and_push(namespace, repository, revision, token,
@@ -103,16 +80,18 @@ def build_verify_and_push(namespace, repository, revision, token,
     :raises OpCourierQuayErrorResponse: When Quay responds with an error
     :raises OpCourierQuayError: When the request fails in an unexpected way
     """
+    verified_manifest = build_and_verify(source_dir, yamls, repository=repository,
+                                         validation_output=validation_output)
 
-    bundle = build_and_verify(source_dir, yamls, repository=repository,
-                              validation_output=validation_output)
-
-    with TemporaryDirectory() as temp_dir:
-        with open(os.path.join(temp_dir, 'bundle.yaml'), 'w') as outfile:
-            yaml.dump(bundle, outfile, default_flow_style=False)
-            outfile.flush()
-
-        PushCmd().push(temp_dir, namespace, repository, revision, token)
+    if not verified_manifest.nested:
+        with TemporaryDirectory() as temp_dir:
+            with open(os.path.join(temp_dir, 'bundle.yaml'), 'w') as outfile:
+                yaml.dump(verified_manifest.bundle, outfile, default_flow_style=False)
+            PushCmd().push(temp_dir, namespace, repository, revision, token)
+    else:
+        with TemporaryDirectory() as temp_dir:
+            copy_tree(source_dir, temp_dir)
+            PushCmd().push(temp_dir, namespace, repository, revision, token)
 
 
 def nest(source_dir, registry_dir):

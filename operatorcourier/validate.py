@@ -19,8 +19,9 @@ class ValidateCmd():
     csvKey = "clusterServiceVersions"
     pkgsKey = "packages"
 
-    def __init__(self, ui_validate_io=False):
+    def __init__(self, ui_validate_io=False, nested=False):
         self.ui_validate_io = ui_validate_io
+        self.nested = nested
         self.validation_json = dict(
             warnings=[],
             errors=[],
@@ -52,6 +53,7 @@ class ValidateCmd():
 
         :param bundle: Dictionary of bundle value
         :param repository: Repository name for the application
+        :param nested: The input source is in nested structure or not
         """
         logger.info("Validating bundle.")
 
@@ -339,12 +341,11 @@ class ValidateCmd():
 
                     if "currentCSV" not in channel:
                         self._log_error("package channel.currentCSV not defined.")
-                    else:
-                        if channel["currentCSV"] not in csvNames:
-                            self._log_error("channel.currentCSV %s is not "
-                                            "included in list of csvs",
-                                            channel["currentCSV"])
-                            valid = False
+                    elif not self.nested and channel["currentCSV"] not in csvNames:
+                        self._log_error("channel.currentCSV %s is not "
+                                        "included in list of csvs",
+                                        channel["currentCSV"])
+                        valid = False
 
         else:
             self._log_error("package channels not defined.")
