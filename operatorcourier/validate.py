@@ -481,6 +481,7 @@ class ValidateCmd():
                 "AI/Machine Learning",
                 "Big Data",
                 "Cloud Provider",
+                "Developer Tools",
                 "Database",
                 "Integration & Delivery",
                 "Logging & Tracing",
