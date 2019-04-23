@@ -58,18 +58,23 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
             yaml.dump(csv, outfile, default_flow_style=False)
             outfile.flush()
 
-        csv_crds = csv["spec"]["customresourcedefinitions"]["owned"]
-        for csv_crd in csv_crds:
-            crd_name = csv_crd["name"]
-            if crd_name in crds:
-                crd = crds[crd_name]
-                crdfile_name = os.path.join(csv_folder, '%s.crd.yaml' % crd_name)
-                with open(crdfile_name, 'w') as outfile:
-                    yaml.dump(crd, outfile, default_flow_style=False)
-                    outfile.flush()
-            else:
-                errors.append("CRD %s mentioned in CSV %s was not found in directory."
-                              % (crd_name, csv_name))
+        if "customresourcedefinitions" in csv["spec"]:
+            if "owned" in csv["spec"]["customresourcedefinitions"]:
+                csv_crds = csv["spec"]["customresourcedefinitions"]["owned"]
+                for csv_crd in csv_crds:
+                    if "name" not in csv_crd:
+                        errors.append("CSV %s has an owned CRD without a `name` field"
+                                      "defined" % csv_name)
+                    crd_name = csv_crd["name"]
+                    if crd_name in crds:
+                        crd = crds[crd_name]
+                        crdfile_name = os.path.join(csv_folder, '%s.crd.yaml' % crd_name)
+                        with open(crdfile_name, 'w') as outfile:
+                            yaml.dump(crd, outfile, default_flow_style=False)
+                            outfile.flush()
+                    else:
+                        errors.append("CRD %s mentioned in CSV %s was not found in"
+                                      "directory." % (crd_name, csv_name))
 
     # if no errors were encountered, lets create the real directory and populate it.
     if len(errors) == 0:
