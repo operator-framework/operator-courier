@@ -190,6 +190,10 @@ class ValidateCmd():
                     spec["customresourcedefinitions"], bundleData) is False:
                 valid = False
 
+        if "apiservicedefinitions" in spec:
+            if self._csv_asd_validation(spec["apiservicedefinitions"]) is False:
+                valid = False
+
         return valid
 
     def _csv_crd_validation(self, customresourcedefinitions, bundleData):
@@ -306,6 +310,55 @@ class ValidateCmd():
                                                     "match "
                                                     "CSV.spec.crd.owned.name")
                                     valid = False
+
+        return valid
+
+    def _csv_asd_validation(self, apiservicedefinitions):
+        valid = True
+
+        if "owned" not in apiservicedefinitions:
+            self._log_error("spec.apiservicedefinitions.owned"
+                            "not defined for csv")
+            return False
+
+        # required attributes of owned apiservicedefinitions
+        attributeList = ["group", "version", "kind", "name", "deploymentName",
+                         "displayName", "description"]
+
+        # validate the owned apiservicedefinitions
+        def validate_owned(resource, attribute):
+            if attribute not in resource:
+                self._log_error(
+                    "%s not defined for item in spec.apiservicedefinitions." % attribute)
+                return False
+            elif not resource[attribute]:
+                self._log_error("%s is empty for item in "
+                                "spec.apiservicedefinitions." % attribute)
+                return False
+            return True
+
+        for csvOwnedAsd in apiservicedefinitions["owned"]:
+            for attr in attributeList:
+                if validate_owned(csvOwnedAsd, attr) is False:
+                    valid = False
+
+            if "specDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                if self._csv_descriptors_validation(
+                        csvOwnedAsd["specDescriptors"],
+                        csvOwnedAsd["name"]) is False:
+                    valid = False
+
+            if "statusDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                if self._csv_descriptors_validation(
+                        csvOwnedAsd["statusDescriptors"],
+                        csvOwnedAsd["name"]) is False:
+                    valid = False
+
+            if "actionDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                if self._csv_descriptors_validation(
+                        csvOwnedAsd["actionDescriptors"],
+                        csvOwnedAsd["name"]) is False:
+                    valid = False
 
         return valid
 
