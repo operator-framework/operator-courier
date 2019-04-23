@@ -107,6 +107,14 @@ data:
           mediatype: image/png
         install:
           spec:
+            permissions:
+            - rules:
+              - apiGroups:
+                - ''
+                resources:
+                - 'serviceaccounts'
+                verbs:
+                - '*'
             clusterPermissions:
             - rules:
               - apiGroups:

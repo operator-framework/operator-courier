@@ -30,6 +30,20 @@ def test_valid_bundles(bundle, expected_validation_results_dict):
     ("tests/test_files/bundles/verification/no-data-key.bundle.yaml",
         {'errors': ['Bundle does not contain any clusterServiceVersions.',
                     'Bundle does not contain any packages.'], 'warnings': []}),
+    ("tests/test_files/bundles/verification/csvinstallspecnotlists.invalid.bundle.yaml",
+        {'errors': ['csv spec.install.spec.deployments should be a list',
+                    'csv spec.install.spec.permissions should be a list',
+                    'csv spec.install.spec.clusterPermissions should be a list'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/"
+        "csvmissinginstallattributes.invalid.bundle.yaml",
+        {'errors': ['csv spec.install.strategy not defined',
+                    'csv spec.install.spec not defined'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/"
+        "csvinstallstrategywrongvalue.invalid.bundle.yaml",
+        {'errors': ["csv spec.install.strategy must be one of ['deployment']"],
+            'warnings': ['csv spec.icon not defined']}),
 ])
 def test_invalid_bundle(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)
