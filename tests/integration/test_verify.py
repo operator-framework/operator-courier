@@ -1,5 +1,8 @@
 import pytest
 import subprocess
+from tempfile import TemporaryDirectory
+from os.path import join, isfile
+from json import loads
 
 
 @pytest.mark.parametrize('source_dir', [
@@ -14,6 +17,72 @@ def test_verify_valid_sources(source_dir):
                                stderr=subprocess.STDOUT)
     exit_code = process.wait()
     assert exit_code == 0
+
+
+@pytest.mark.parametrize('source_dir', [
+    "tests/test_files/bundles/api/etcd_valid_nested_bundle",
+    "tests/test_files/bundles/api/prometheus_valid_nested_bundle",
+])
+def test_verify_valid_nested_sources(source_dir):
+    process = subprocess.Popen(f'operator-courier verify {source_dir}',
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+    exit_code = process.wait()
+    assert exit_code == 0
+
+
+@pytest.mark.parametrize('source_dir', [
+    "tests/test_files/bundles/api/etcd_invalid_nested_bundle",
+])
+def test_verify_invalid_nested_sources(source_dir):
+    process = subprocess.Popen(f'operator-courier verify {source_dir}',
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+    exit_code = process.wait()
+    assert exit_code != 0
+
+
+@pytest.mark.parametrize('source_dir', [
+    "tests/test_files/bundles/api/etcd_valid_nested_bundle",
+    "tests/test_files/bundles/api/prometheus_valid_nested_bundle",
+])
+def test_verify_valid_nested_sources_with_output(source_dir):
+    with TemporaryDirectory() as temp_dir:
+        outfile_path = join(temp_dir, "output.json")
+        process = subprocess.Popen(f'operator-courier verify {source_dir} '
+                                   f'--validation-output {outfile_path}',
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        exit_code = process.wait()
+        assert isfile(outfile_path)
+        with open(outfile_path, 'r') as f:
+            validation_json = loads(f.read())
+
+    assert exit_code == 0
+    assert not validation_json['errors']
+
+
+@pytest.mark.parametrize('source_dir', [
+    "tests/test_files/bundles/api/etcd_invalid_nested_bundle",
+])
+def test_verify_invalid_nested_sources_with_output(source_dir):
+    with TemporaryDirectory() as temp_dir:
+        outfile_path = join(temp_dir, "output.json")
+        process = subprocess.Popen(f'operator-courier verify {source_dir} '
+                                   f'--validation-output {outfile_path}',
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        exit_code = process.wait()
+        assert isfile(outfile_path)
+        with open(outfile_path, 'r') as f:
+            validation_json = loads(f.read())
+
+    assert exit_code != 0
+    assert validation_json['errors']
 
 
 @pytest.mark.parametrize('source_dir,error_message', [

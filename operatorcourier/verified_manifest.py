@@ -30,6 +30,7 @@ class VerifiedManifest:
         self.bundle_dict = None
         self.__validation_dict = \
             self.get_validation_dict_from_manifests(manifests, ui_validate_io, repository)
+        self.is_valid = False if self.__validation_dict['errors'] else True
 
     def get_manifest_files_content(self, file_paths):
         """
@@ -136,12 +137,6 @@ class VerifiedManifest:
                 .validate(bundle_dict, repository)
             for log_level, msg_list in validation_dict_temp.items():
                 validation_dict[log_level].extend(msg_list)
-
-        if validation_dict['errors']:
-            logger.error("Bundle failed validation.")
-            raise OpCourierBadBundle(
-                "Resulting bundle is invalid, input yaml is improperly defined.",
-                validation_info=validation_dict)
 
         if not self.nested:
             self.bundle_dict = bundle_dict

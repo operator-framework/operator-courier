@@ -14,6 +14,7 @@ from operatorcourier.verified_manifest import VerifiedManifest
 from operatorcourier.push import PushCmd
 from operatorcourier.nest import nest_bundles
 from operatorcourier.flatten import flatten_bundles
+from operatorcourier.errors import OpCourierBadBundle
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,10 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
     if validation_output:
         verified_manifest.write_validation_to_file(validation_output)
+
+    if not verified_manifest.is_valid:
+        raise OpCourierBadBundle("Resulting bundle is invalid, "
+                                 "input yaml is improperly defined.", {})
 
     return verified_manifest
 
