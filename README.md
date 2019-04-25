@@ -16,26 +16,39 @@ To install the operator courier project to use from the command line, just insta
 $ pip3 install operator-courier
 ```
 
-Once the project is installed, you can verify that a set of files is valid and can be bundled and pushed. First, create a flat directory containing all of the CSV, CRD and PACKAGE files that are included in your bundle.  Then just use `operator-courier verify` to test it.
+Once the project is installed, you can run the `verify` command on a directory that adheres to the expected [Manifest format](https://github.com/operator-framework/operator-registry#manifest-format).
 
 ```bash
-$ operator-courier verify $BUNDLE_DIR
+$ operator-courier verify $MANIFESTS_DIR
 ```
 
-To generate an operator bundle and push it to a quay.io app registry just use `operator-courier push`. Just pass the directory, namespace, repository, release version and quay.io authorization token needed to push.
+To push the operator manifests to a quay.io app registry just use `operator-courier push`. Just pass the directory, namespace, repository, release version and quay.io authorization token needed to push.
 
 ```bash
-$ operator-courier push $BUNDLE_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REPOSITORY $EXAMPLE_RELEASE "$AUTH_TOKEN"
+$ operator-courier push $MANIFESTS_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REPOSITORY $EXAMPLE_RELEASE "$AUTH_TOKEN"
 ```
 
-Once that is created, you should be able to view your bundle on quay.io's Application page for your particular namespace, repo, and release version (https://quay.io/application/$EXAMPLE_NAMESPACE/$EXAMPLE_REPOSITORY?tab=$EXAMPLE_RELEASE)
+Once that is created, you should be able to view your pushed application on quay.io's Application page for your particular namespace, repo, and release version (https://quay.io/application/$EXAMPLE_NAMESPACE/$EXAMPLE_REPOSITORY?tab=$EXAMPLE_RELEASE)
 
-For more info, run help on any of the subcommands
+For more info, run help on the main program or any of the subcommands
 
 ```bash
 $ operator-courier -h
-$ operator-courier push -h
+$ operator-courier $SUBCOMMAND -h
 ```
+
+### Debugging Validation Errors
+You can optionally specify the `--verbose` flag to view detailed validation information during `verify` or `push`
+
+```bash
+$ operator-courier --verbose verify $MANIFESTS_DIR
+$ operator-courier --verbose push $MANIFESTS_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REPOSITORY $EXAMPLE_RELEASE "$AUTH_TOKEN"
+```
+
+For more information, please refer to the following docs about creating valid CSVs
+- [Building a Cluster Service Version (CSV) for the Operator Framework](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/Documentation/design/building-your-csv.md#your-custom-resource-definitions)
+- [Required fields within your CSV](https://github.com/operator-framework/community-operators/blob/master/docs/required-fields.md#categories)
+
 
 ### Authentication
 Currently, the quay API used by the courier can only be authenticated using quay.io's basic account token authentication. In order to get this token to authenticate with quay, a request needs to be made against the login API. This requires a normal quay.io account, and takes a username and password as parameters. This will return an auth token which can be passed to the courier.
@@ -55,16 +68,12 @@ Expecting future enhancements, this authentication process will change somewhat 
 ## Library
 To use the Operator Courier in your project, simply install the Operator Courier pip package. Then import the api module:
 
-```
+```python
 from operatorcourier import api
 
 def main():
-    api.build_verify_and_push($your_namespace, $your_repository, $your_release_version, $your_quay_authtoken, source_dir="./my/folder/to/bundle/")
+    api.build_verify_and_push(NAMESPACE, RESPOSITORY, RELEASE_VERSION, AUTH_TOKEN, source_dir="./my/folder/to/manifests/")
 ```
-
-We also support passing a list of strings that make up the bundle by specifying the `yamls=` parameter, i.e.:
-
-`api.build_verify_and_push($your_namespace, $your_repository, $your_release_version, $your_quay_authtoken, yamls=$your_yamls_list)`
 
 ## Building and running the tool locally with pip
 ```bash
