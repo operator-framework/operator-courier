@@ -347,7 +347,7 @@ class ValidateCmd():
             if "alm-examples" in annotations:
                 try:
                     json.loads(annotations["alm-examples"])
-                except KeyError:
+                except Exception:
                     self._log_error("metadata.annotations.alm-examples contains "
                                     "invalid json string")
                     valid = False
