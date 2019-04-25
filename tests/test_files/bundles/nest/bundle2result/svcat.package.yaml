@@ -1,0 +1,4 @@
+channels:
+- currentCSV: svcat.v0.1.34
+  name: alpha
+packageName: svcat

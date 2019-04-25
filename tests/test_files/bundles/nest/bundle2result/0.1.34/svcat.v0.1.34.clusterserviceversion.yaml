@@ -1,0 +1,530 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    categories: OpenShift Optional
+    certified: 'false'
+    containerImage: quay.io/openshift/origin-service-catalog
+    createdAt: 2018-12-01 00:00:00
+    description: Service Catalog lets you provision cloud services directly from the
+      comfort of native Kubernetes tooling. This project is in incubation to bring
+      integration with service brokers to the Kubernetes ecosystem via the Open Service
+      Broker API.
+    support: AOS Service Catalog
+  name: svcat.v0.1.34
+  namespace: placeholder
+spec:
+  apiservicedefinitions:
+    owned:
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ClusterServiceClass
+      group: servicecatalog.k8s.io
+      kind: ClusterServiceClass
+      name: clusterserviceclasses
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ClusterServicePlan
+      group: servicecatalog.k8s.io
+      kind: ClusterServicePlan
+      name: clusterserviceplans
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ClusterServiceBroker
+      group: servicecatalog.k8s.io
+      kind: ClusterServiceBroker
+      name: clusterservicebrokers
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ServiceInstance
+      group: servicecatalog.k8s.io
+      kind: ServiceInstance
+      name: serviceinstances
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ServiceBinding
+      group: servicecatalog.k8s.io
+      kind: ServiceBinding
+      name: servicebindings
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ServiceClass
+      group: servicecatalog.k8s.io
+      kind: ServiceClass
+      name: serviceclasses
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ServicePlan
+      group: servicecatalog.k8s.io
+      kind: ServicePlan
+      name: serviceplans
+      version: v1beta1
+    - containerPort: 5443
+      deploymentName: svcat-apiserver
+      description: A service catalog resource
+      displayName: ServiceBroker
+      group: servicecatalog.k8s.io
+      kind: ServiceBroker
+      name: servicebrokers
+      version: v1beta1
+  description: Service Catalog lets you provision cloud services directly from the
+    comfort of native Kubernetes tooling. This project is in incubation to bring integration
+    with service brokers to the Kubernetes ecosystem via the Open Service Broker API.
+  displayName: Service Catalog
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ''
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+          - update
+        - apiGroups:
+          - ''
+          resources:
+          - secrets
+          verbs:
+          - get
+          - create
+          - update
+          - delete
+          - list
+          - watch
+          - patch
+        - apiGroups:
+          - ''
+          resources:
+          - pods
+          verbs:
+          - get
+          - list
+          - update
+          - patch
+          - watch
+          - delete
+          - initialize
+        - apiGroups:
+          - ''
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - clusterserviceclasses
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - patch
+          - update
+          - delete
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - clusterserviceplans
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - patch
+          - update
+          - delete
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - clusterservicebrokers
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - serviceinstances
+          - servicebindings
+          verbs:
+          - get
+          - list
+          - watch
+          - update
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - clusterservicebrokers/status
+          - clusterserviceclasses/status
+          - clusterserviceplans/status
+          - serviceinstances/status
+          - serviceinstances/reference
+          - servicebindings/status
+          - servicebindings/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - serviceclasses
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - patch
+          - update
+          - delete
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - serviceplans
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - patch
+          - update
+          - delete
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - servicebrokers
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - servicecatalog.k8s.io
+          resources:
+          - servicebrokers/status
+          - serviceclasses/status
+          - serviceplans/status
+          verbs:
+          - update
+        serviceAccountName: service-catalog-controller
+      - rules:
+        - apiGroups:
+          - ''
+          resourceNames:
+          - extension-apiserver-authentication
+          resources:
+          - configmaps
+          verbs:
+          - get
+        - apiGroups:
+          - ''
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resources:
+          - validatingwebhookconfigurations
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resources:
+          - mutatingwebhookconfigurations
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        serviceAccountName: service-catalog-apiserver
+      deployments:
+      - name: svcat-apiserver
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: svcat-apiserver
+          strategy:
+            type: RollingUpdate
+          template:
+            metadata:
+              labels:
+                app: svcat-apiserver
+            spec:
+              containers:
+              - args:
+                - apiserver
+                - --enable-admission-plugins
+                - NamespaceLifecycle,DefaultServicePlan,ServiceBindingsLifecycle,ServicePlanChangeValidator,BrokerAuthSarCheck
+                - --secure-port
+                - '5443'
+                - --etcd-servers
+                - http://localhost:2379
+                - -v
+                - '3'
+                - --feature-gates
+                - OriginatingIdentity=true
+                - --feature-gates
+                - NamespacedServiceBroker=true
+                command:
+                - /usr/bin/service-catalog
+                image: quay.io/openshift/origin-service-catalog:v4.0.0
+                imagePullPolicy: IfNotPresent
+                livenessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 5443
+                    scheme: HTTPS
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                name: svcat-apiserver
+                ports:
+                - containerPort: 5443
+                readinessProbe:
+                  failureThreshold: 1
+                  httpGet:
+                    path: /healthz
+                    port: 5443
+                    scheme: HTTPS
+                  initialDelaySeconds: 30
+                  periodSeconds: 5
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 140Mi
+                  requests:
+                    cpu: 100m
+                    memory: 40Mi
+                volumeMounts:
+                - mountPath: /var/run/kubernetes-service-catalog
+                  name: apiservice-cert
+              - command:
+                - /usr/local/bin/etcd
+                - --listen-client-urls
+                - http://0.0.0.0:2379
+                - --advertise-client-urls
+                - http://localhost:2379
+                env:
+                - name: ETCD_DATA_DIR
+                  value: /etcd-data-dir
+                image: quay.io/coreos/etcd:latest
+                imagePullPolicy: Always
+                livenessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /health
+                    port: 2379
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                name: etcd
+                ports:
+                - containerPort: 2379
+                readinessProbe:
+                  failureThreshold: 1
+                  httpGet:
+                    path: /health
+                    port: 2379
+                  initialDelaySeconds: 30
+                  periodSeconds: 5
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 150Mi
+                  requests:
+                    cpu: 100m
+                    memory: 50Mi
+                volumeMounts:
+                - mountPath: /etcd-data-dir
+                  name: etcd-data-dir
+              serviceAccountName: service-catalog-apiserver
+              volumes:
+              - emptyDir: {}
+                name: etcd-data-dir
+      - name: svcat-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: svcat-controller-manager
+          strategy:
+            type: RollingUpdate
+          template:
+            metadata:
+              labels:
+                app: svcat-controller-manager
+            spec:
+              containers:
+              - args:
+                - controller-manager
+                - --secure-port
+                - '8444'
+                - -v
+                - '3'
+                - --leader-election-namespace
+                - openshift-operators
+                - --leader-elect-resource-lock
+                - configmaps
+                - --cluster-id-configmap-namespace=openshift-operators
+                - --broker-relist-interval
+                - 5m
+                - --feature-gates
+                - OriginatingIdentity=true
+                - --feature-gates
+                - AsyncBindingOperations=true
+                - --feature-gates
+                - NamespacedServiceBroker=true
+                command:
+                - /usr/bin/service-catalog
+                env:
+                - name: K8S_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                image: quay.io/openshift/origin-service-catalog:v4.0.0
+                imagePullPolicy: IfNotPresent
+                livenessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 8444
+                    scheme: HTTPS
+                  initialDelaySeconds: 20
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 2
+                name: svcat-controller-manager
+                ports:
+                - containerPort: 8444
+                readinessProbe:
+                  failureThreshold: 1
+                  httpGet:
+                    path: /healthz
+                    port: 8444
+                    scheme: HTTPS
+                  initialDelaySeconds: 20
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 2
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 150Mi
+                  requests:
+                    cpu: 100m
+                    memory: 100Mi
+                volumeMounts:
+                - mountPath: /var/run/kubernetes-service-catalog
+                  name: apiservice-cert
+              serviceAccountName: service-catalog-controller
+              volumes:
+              - name: apiservice-cert
+                secret:
+                  defaultMode: 420
+                  items:
+                  - key: tls.crt
+                    path: apiserver.crt
+                  - key: tls.key
+                    path: apiserver.key
+                  secretName: v1beta1.servicecatalog.k8s.io-cert
+      permissions:
+      - rules:
+        - apiGroups:
+          - ''
+          resourceNames:
+          - cluster-info
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - create
+          - list
+          - watch
+          - update
+        - apiGroups:
+          - ''
+          resources:
+          - configmaps
+          verbs:
+          - create
+          - list
+          - watch
+          - get
+          - update
+        - apiGroups:
+          - ''
+          resourceNames:
+          - service-catalog-controller-manager
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - update
+        serviceAccountName: service-catalog-controller
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - catalog
+  - service
+  - svcat
+  - osb
+  - broker
+  links:
+  - name: Documentation
+    url: https://svc-cat.io/docs
+  - name: Service Catalog
+    url: https://github.com/openshift/service-catalog
+  maintainers:
+  - email: openshift-operators@redhat.com
+    name: Red Hat
+  provider:
+    name: Red Hat
+  version: 0.1.34
