@@ -1,6 +1,5 @@
 import os
 import logging
-import semver
 import json
 from operatorcourier.build import BuildCmd
 from operatorcourier.validate import ValidateCmd
@@ -46,19 +45,6 @@ class VerifiedManifest:
                     manifests_content.append(f.read())
         return manifests_content
 
-    def is_dir_name_semver(self, dir_name):
-        """
-        Checks if the dir_name is a semver or not.
-        :param dir_name: the name of the directory
-        :return: True if the dir_name is a semver, False otherwise
-        """
-        try:
-            semver.parse(dir_name)
-        except ValueError:
-            logging.warning('Ignoring directory "%s" as it is not in semver format.')
-            return False
-        return True
-
     def get_manifests_info(self, source_dir):
         """
         Given a source directory OR a list of yaml files. The function returns a dict
@@ -77,16 +63,14 @@ class VerifiedManifest:
         manifests = {}
 
         root_path, dir_names, root_dir_files = next(os.walk(source_dir))
-        # removing dirs whose name are not semver
-        version_dirs = list(filter(lambda x: self.is_dir_name_semver(x), dir_names))
         # flat directory
-        if not version_dirs:
+        if not dir_names:
             manifests[FLAT_KEY] = self.get_manifest_files_content(
                 [os.path.join(root_path, file) for file in root_dir_files])
         # nested
         else:
             # add all manifest files from each version folder to manifests dict
-            for version_dir in version_dirs:
+            for version_dir in dir_names:
                 version_dir_path = os.path.join(root_path, version_dir)
                 _, _, version_dir_files = next(os.walk(version_dir_path))
                 file_paths = [os.path.join(version_dir_path, file)
