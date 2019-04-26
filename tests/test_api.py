@@ -7,7 +7,7 @@ from operatorcourier.errors import OpCourierBadBundle
 
 @pytest.mark.parametrize('directory,expected', [
     ("tests/test_files/bundles/api/bundle1",
-     "tests/test_files/bundles/api/bundle1/results/bundle.yaml"),
+     "tests/test_files/bundles/api/results/bundle.yaml"),
 ])
 def test_make_bundle(directory, expected):
     verified_manifest = api.build_and_verify(source_dir=directory)
@@ -27,7 +27,7 @@ def test_make_bundle(directory, expected):
             "tests/test_files/bundles/api/bundle1/csv.yaml",
             "tests/test_files/bundles/api/bundle1/packages.yaml"
         ],
-        "tests/test_files/bundles/api/bundle1/results/bundle.yaml"
+        "tests/test_files/bundles/api/results/bundle.yaml"
     ),
 ])
 def test_make_bundle_with_yaml_list(yaml_files, expected):
