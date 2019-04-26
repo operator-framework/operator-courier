@@ -12,7 +12,7 @@ tests_require = [
 setup(
   name='operator-courier',
   packages=['operatorcourier'],
-  version='2.0.0',
+  version='2.0.1',
   description='Build, verify and push operators',
   author='AOS Marketplace',
   author_email='aos-marketplace@redhat.com',
