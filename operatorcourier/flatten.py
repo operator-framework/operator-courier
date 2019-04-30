@@ -42,7 +42,11 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
     csv_paths = []
 
     for version_folder_name in folder_names:
-        parse_version_folder(source_dir, version_folder_name, csv_paths, crd_dict)
+        folder_semver = get_folder_semver(source_dir, version_folder_name)
+        if not folder_semver:
+            continue
+        parse_version_folder(source_dir, version_folder_name, folder_semver,
+                             csv_paths, crd_dict)
 
     # add package in source_dir
     package_path = get_package_path(source_dir, file_names)
@@ -61,7 +65,35 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
     return file_paths_to_copy
 
 
-def parse_version_folder(base_dir: str, version_folder_name: str,
+def get_folder_semver(base_dir: str, version_folder_name: str):
+    version_folder_path = os.path.join(base_dir, version_folder_name)
+
+    for item in os.listdir(version_folder_path):
+        item_path = os.path.join(version_folder_path, item)
+        if not os.path.isfile(item_path) or not is_yaml_file(item_path):
+            continue
+
+        with open(item_path, 'r') as f:
+            file_content = f.read()
+
+        if identify.get_operator_artifact_type(file_content) == 'ClusterServiceVersion':
+            try:
+                csv_version = safe_load(file_content)['spec']['version']
+            except MarkedYAMLError:
+                msg = f'{item} is not a valid YAML file.'
+                logger.error(msg)
+                raise errors.OpCourierBadYaml(msg)
+            except KeyError:
+                msg = f'{item} is not a valid CSV file as "spec.version" ' \
+                      f'field is required'
+                logger.error(msg)
+                raise errors.OpCourierBadBundle(msg, {})
+            return csv_version
+
+    return None
+
+
+def parse_version_folder(base_dir: str, version_folder_name: str, folder_semver: str,
                          csv_paths: list, crd_dict: Dict[str, Tuple[str, str]]):
     """
     Parse the version folder of the bundle and collect information of CSV and CRDs
@@ -69,26 +101,19 @@ def parse_version_folder(base_dir: str, version_folder_name: str,
 
     :param base_dir: Path of the base directory where the version folder is located
     :param version_folder_name: The name of the version folder containing bundle files
+    :param folder_semver: The semantic version of the current folder
     :param csv_paths: A list of CSV file paths inside version folders
     :param crd_dict: dict that contains CRD info collected from different version folders,
     where the key is the CRD name, and the value is a tuple where the first element is
     the version of the bundle, and the second is the path of the CRD file
     """
-    # parse each version folder and parse CRD, CSV files
-    try:
-        semver.parse(version_folder_name)
-    except ValueError:
-        logger.warning("Ignoring %s as it is not a valid semver. "
-                       "See https://semver.org for the semver specification.",
-                       version_folder_name)
-        return
-
-    logger.info('Parsing folder: %s...', version_folder_name)
+    logger.info('Parsing folder %s for operator version %s',
+                version_folder_name, folder_semver)
 
     contains_csv = False
     version_folder_path = os.path.join(base_dir, version_folder_name)
 
-    for item in os.listdir(os.path.join(base_dir, version_folder_name)):
+    for item in os.listdir(version_folder_path):
         item_path = os.path.join(version_folder_path, item)
 
         if not os.path.isfile(item_path):
@@ -121,9 +146,9 @@ def parse_version_folder(base_dir: str, version_folder_name: str,
                 raise errors.OpCourierBadBundle(msg, {})
             # create new CRD type entry if not found in dict
             if crd_name not in crd_dict:
-                crd_dict[crd_name] = (version_folder_name, item_path)
+                crd_dict[crd_name] = (folder_semver, item_path)
             # update the CRD type entry with the file with the newest version
-            elif semver.compare(version_folder_name, crd_dict[crd_name][0]) > 0:
+            elif semver.compare(folder_semver, crd_dict[crd_name][0]) > 0:
                 crd_dict[crd_name] = (crd_dict[crd_name][0], item_path)
 
     if not contains_csv:
