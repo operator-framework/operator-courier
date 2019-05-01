@@ -6,7 +6,9 @@ from operatorcourier.errors import OpCourierBadBundle
 
 
 @pytest.mark.parametrize('directory,expected', [
-    ("tests/test_files/bundles/api/bundle1",
+    ("tests/test_files/bundles/api/valid_flat_bundle",
+     "tests/test_files/bundles/api/results/bundle.yaml"),
+    ("tests/test_files/bundles/api/valid_flat_bundle_with_random_folder",
      "tests/test_files/bundles/api/results/bundle.yaml"),
 ])
 def test_make_bundle(directory, expected):
@@ -23,9 +25,9 @@ def test_make_bundle(directory, expected):
 @pytest.mark.parametrize('yaml_files,expected', [
     (
         [
-            "tests/test_files/bundles/api/bundle1/crd.yml",
-            "tests/test_files/bundles/api/bundle1/csv.yaml",
-            "tests/test_files/bundles/api/bundle1/packages.yaml"
+            "tests/test_files/bundles/api/valid_flat_bundle/crd.yml",
+            "tests/test_files/bundles/api/valid_flat_bundle/csv.yaml",
+            "tests/test_files/bundles/api/valid_flat_bundle/packages.yaml"
         ],
         "tests/test_files/bundles/api/results/bundle.yaml"
     ),
@@ -47,8 +49,8 @@ def test_make_bundle_with_yaml_list(yaml_files, expected):
 
 
 @pytest.mark.parametrize('yaml_files', [
-    ["tests/test_files/bundles/api/bundle1/crd.yml",
-     "tests/test_files/bundles/api/bundle1/csv.yaml"]
+    ["tests/test_files/bundles/api/valid_flat_bundle/crd.yml",
+     "tests/test_files/bundles/api/valid_flat_bundle/csv.yaml"]
 ])
 def test_make_bundle_invalid(yaml_files):
     yamls = []
@@ -64,8 +66,10 @@ def test_make_bundle_invalid(yaml_files):
 
 
 @pytest.mark.parametrize('nested_source_dir', [
-    'tests/test_files/bundles/api/prometheus_valid_nested_bundle',
     'tests/test_files/bundles/api/etcd_valid_nested_bundle',
+    'tests/test_files/bundles/api/etcd_valid_nested_bundle_with_random_folder',
+    'tests/test_files/bundles/api/prometheus_valid_nested_bundle',
+    'tests/test_files/bundles/api/prometheus_valid_nested_bundle_2',
 ])
 def test_valid_nested_bundles(nested_source_dir):
     verified_manifest = api.build_and_verify(source_dir=nested_source_dir)
@@ -80,7 +84,17 @@ def test_valid_nested_bundles(nested_source_dir):
 ])
 def test_invalid_nested_bundles(nested_source_dir):
     with pytest.raises(OpCourierBadBundle) as err:
-        api.build_and_verify(source_dir=nested_source_dir, repository='invalid_repo')
+        api.build_and_verify(source_dir=nested_source_dir, repository='etcd')
 
     assert str(err.value) == "Resulting bundle is invalid, " \
                              "input yaml is improperly defined."
+
+
+@pytest.mark.parametrize('nested_source_dir', [
+    'tests/test_files/yaml_source_dir/invalid_yamls_multiple_packages',
+])
+def test_invalid_flat_bundles(nested_source_dir):
+    with pytest.raises(OpCourierBadBundle) as err:
+        api.build_and_verify(source_dir=nested_source_dir, repository='oneagent')
+
+    assert str(err.value) == "Only 1 package is expected to exist in source root folder."

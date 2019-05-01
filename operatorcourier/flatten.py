@@ -5,7 +5,9 @@ from typing import Dict, Tuple
 from shutil import copyfile
 import semver
 from operatorcourier import identify
-from operatorcourier import errors
+from operatorcourier.errors import OpCourierBadBundle, OpCourierBadYaml
+from operatorcourier.manifest_parser \
+    import is_manifest_folder, get_package_csv_info_from_root, is_yaml_file
 
 logger = logging.getLogger(__name__)
 
@@ -22,54 +24,61 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
     of operator bundles (CRD, CSV, package) in separate version directories
     :return: A list of tuples where in each tuple, the first element is
     the source file path to be copied to the flattened directory, and the second is
-    the new file name to be used in the file copy. The function returns an empty list if
-    the source_dir is already flat
+    the new file name to be used in the file copy.
     """
 
-    # extract package file and version folders from source_dir
-    root, folder_names, file_names = next(os.walk(source_dir))
-    if not folder_names:
+    # get package content and check if CSV exists in source_dir root, and
+    # process all subdirectories and filter those that do not contain valid manifest files
+    root_path, dir_names, root_dir_files = next(os.walk(source_dir))
+    package_content, contains_csv = get_package_csv_info_from_root(source_dir)
+
+    dir_paths = [os.path.join(source_dir, dir_name) for dir_name in dir_names]
+    manifest_paths = list(filter(lambda x: is_manifest_folder(x), dir_paths))
+
+    # nested layout
+    if manifest_paths:
+        file_paths_to_copy = []  # [ (SRC_FILE_PATH, NEW_FILE_NAME) ]
+
+        crd_dict = {}  # { CRD_NAME => (VERSION, CRD_PATH) }
+        csv_paths = []
+
+        for manifest_path in manifest_paths:
+            folder_semver = get_folder_semver(manifest_path)
+            if not folder_semver:
+                continue
+            parse_manifest_folder(manifest_path, folder_semver,
+                                  csv_paths, crd_dict)
+
+        # add package in source_dir
+        package_path = get_package_path(source_dir, root_dir_files)
+        file_paths_to_copy.append((package_path, os.path.basename(package_path)))
+
+        # add all CRDs with the latest version
+        for _, crd_path in crd_dict.values():
+            file_paths_to_copy.append((crd_path, os.path.basename(crd_path)))
+
+        # add all CSVs
+        for csv_file_name, csv_entries in create_csv_dict(csv_paths).items():
+            for (version, csv_path) in csv_entries:
+                basename, ext = os.path.splitext(csv_file_name)
+                file_paths_to_copy.append((csv_path, f'{basename}-v{version}{ext}'))
+
+        return file_paths_to_copy
+    # flat layout
+    elif package_content and contains_csv:
         logger.info('The source directory is already flat.')
         # just return files from dir as they are already flat
-        return [
-            (os.path.join(root, name), name)
-            for name in file_names
-        ]
+        return [(os.path.join(source_dir, name), name) for name in root_dir_files]
 
-    file_paths_to_copy = []  # [ (SRC_FILE_PATH, NEW_FILE_NAME) ]
-
-    crd_dict = {}  # { CRD_NAME => (VERSION, CRD_PATH) }
-    csv_paths = []
-
-    for version_folder_name in folder_names:
-        folder_semver = get_folder_semver(source_dir, version_folder_name)
-        if not folder_semver:
-            continue
-        parse_version_folder(source_dir, version_folder_name, folder_semver,
-                             csv_paths, crd_dict)
-
-    # add package in source_dir
-    package_path = get_package_path(source_dir, file_names)
-    file_paths_to_copy.append((package_path, os.path.basename(package_path)))
-
-    # add all CRDs with the latest version
-    for _, crd_path in crd_dict.values():
-        file_paths_to_copy.append((crd_path, os.path.basename(crd_path)))
-
-    # add all CSVs
-    for csv_file_name, csv_entries in create_csv_dict(csv_paths).items():
-        for (version, csv_path) in csv_entries:
-            basename, ext = os.path.splitext(csv_file_name)
-            file_paths_to_copy.append((csv_path, f'{basename}-v{version}{ext}'))
-
-    return file_paths_to_copy
+    msg = 'The source directory structure is not in valid flat or nested format,' \
+          'because no valid CSV file is found in root or manifest directories.'
+    logger.error(msg)
+    raise OpCourierBadBundle(msg, {})
 
 
-def get_folder_semver(base_dir: str, version_folder_name: str):
-    version_folder_path = os.path.join(base_dir, version_folder_name)
-
-    for item in os.listdir(version_folder_path):
-        item_path = os.path.join(version_folder_path, item)
+def get_folder_semver(folder_path: str):
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
         if not os.path.isfile(item_path) or not is_yaml_file(item_path):
             continue
 
@@ -82,25 +91,24 @@ def get_folder_semver(base_dir: str, version_folder_name: str):
             except MarkedYAMLError:
                 msg = f'{item} is not a valid YAML file.'
                 logger.error(msg)
-                raise errors.OpCourierBadYaml(msg)
+                raise OpCourierBadYaml(msg)
             except KeyError:
                 msg = f'{item} is not a valid CSV file as "spec.version" ' \
                       f'field is required'
                 logger.error(msg)
-                raise errors.OpCourierBadBundle(msg, {})
+                raise OpCourierBadBundle(msg, {})
             return csv_version
 
     return None
 
 
-def parse_version_folder(base_dir: str, version_folder_name: str, folder_semver: str,
-                         csv_paths: list, crd_dict: Dict[str, Tuple[str, str]]):
+def parse_manifest_folder(manifest_path: str, folder_semver: str,
+                          csv_paths: list, crd_dict: Dict[str, Tuple[str, str]]):
     """
     Parse the version folder of the bundle and collect information of CSV and CRDs
     in the bundle
 
-    :param base_dir: Path of the base directory where the version folder is located
-    :param version_folder_name: The name of the version folder containing bundle files
+    :param manifest_path: The path of the manifest folder containing bundle files
     :param folder_semver: The semantic version of the current folder
     :param csv_paths: A list of CSV file paths inside version folders
     :param crd_dict: dict that contains CRD info collected from different version folders,
@@ -108,20 +116,19 @@ def parse_version_folder(base_dir: str, version_folder_name: str, folder_semver:
     the version of the bundle, and the second is the path of the CRD file
     """
     logger.info('Parsing folder %s for operator version %s',
-                version_folder_name, folder_semver)
+                os.path.basename(manifest_path), folder_semver)
 
     contains_csv = False
-    version_folder_path = os.path.join(base_dir, version_folder_name)
 
-    for item in os.listdir(version_folder_path):
-        item_path = os.path.join(version_folder_path, item)
+    for item in os.listdir(manifest_path):
+        item_path = os.path.join(manifest_path, item)
 
         if not os.path.isfile(item_path):
             logger.warning('Ignoring %s as it is not a regular file.', item)
             continue
         if not is_yaml_file(item_path):
-            logging.warning('Ignoring %s as the file does not end with .yaml or .yml',
-                            item_path)
+            logger.warning('Ignoring %s as the file does not end with .yaml or .yml',
+                           item_path)
             continue
 
         with open(item_path, 'r') as f:
@@ -138,12 +145,12 @@ def parse_version_folder(base_dir: str, version_folder_name: str, folder_semver:
             except MarkedYAMLError:
                 msg = "Courier requires valid input YAML files"
                 logger.error(msg)
-                raise errors.OpCourierBadYaml(msg)
+                raise OpCourierBadYaml(msg)
             except KeyError:
                 msg = f'{item} is not a valid CRD file as "metadata.name" ' \
                       f'field is required'
                 logger.error(msg)
-                raise errors.OpCourierBadBundle(msg, {})
+                raise OpCourierBadBundle(msg, {})
             # create new CRD type entry if not found in dict
             if crd_name not in crd_dict:
                 crd_dict[crd_name] = (folder_semver, item_path)
@@ -154,38 +161,38 @@ def parse_version_folder(base_dir: str, version_folder_name: str, folder_semver:
     if not contains_csv:
         msg = 'This version directory does not contain any valid CSV file.'
         logger.error(msg)
-        raise errors.OpCourierBadBundle(msg, {})
+        raise OpCourierBadBundle(msg, {})
 
 
 def get_package_path(base_dir: str, file_names_in_base_dir: list) -> str:
-    packages = []
+    package_path = None
 
     # add package file to file_paths_to_copy
     # only 1 package yaml file is expected in file_names
     for file_name in file_names_in_base_dir:
         file_path = os.path.join(base_dir, file_name)
         if not is_yaml_file(file_path):
-            logging.warning('Ignoring %s as the file does not end with .yaml or .yml',
-                            file_path)
+            logger.warning('Ignoring %s as the file does not end with .yaml or .yml',
+                           file_path)
             continue
 
         with open(file_path, 'r') as f:
             file_content = f.read()
-        if identify.get_operator_artifact_type(file_content) != 'Package':
-            logger.warning('Ignoring %s as it is not a valid package file.', file_name)
-        elif not packages:
-            packages.append(file_path)
-        else:
-            msg = f'The input source directory expects only 1 valid package file.'
-            logger.error(msg)
-            raise errors.OpCourierBadBundle(msg, {})
 
-    if not packages:
+        if identify.get_operator_artifact_type(file_content) == 'Package':
+            if not package_path:
+                package_path = file_path
+            else:
+                msg = f'The input source directory expects only 1 valid package file.'
+                logger.error(msg)
+                raise OpCourierBadBundle(msg, {})
+
+    if not package_path:
         msg = f'The input source directory expects at least 1 valid package file.'
         logger.error(msg)
-        raise errors.OpCourierBadBundle(msg, {})
+        raise OpCourierBadBundle(msg, {})
 
-    return packages[0]
+    return package_path
 
 
 # parse all CSVs and ensure those with same names are handled
@@ -197,8 +204,3 @@ def create_csv_dict(csv_paths: list) -> dict:
         val = (version, csv_path)
         csv_dict.setdefault(csv_file_name, []).append(val)
     return csv_dict
-
-
-def is_yaml_file(file_path: str) -> bool:
-    yaml_ext = ['.yaml', '.yml']
-    return os.path.splitext(file_path)[1] in yaml_ext
