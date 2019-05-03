@@ -20,8 +20,12 @@ def test_verify_valid_sources(source_dir):
 
 
 @pytest.mark.parametrize('source_dir', [
+    "tests/test_files/bundles/api/valid_flat_bundle",
+    "tests/test_files/bundles/api/valid_flat_bundle_with_random_folder",
     "tests/test_files/bundles/api/etcd_valid_nested_bundle",
+    "tests/test_files/bundles/api/etcd_valid_nested_bundle_with_random_folder",
     "tests/test_files/bundles/api/prometheus_valid_nested_bundle",
+    "tests/test_files/bundles/api/prometheus_valid_nested_bundle_2",
 ])
 def test_verify_valid_nested_sources(source_dir):
     process = subprocess.Popen(f'operator-courier verify {source_dir}',
@@ -45,8 +49,9 @@ def test_verify_invalid_nested_sources(source_dir):
 
 
 @pytest.mark.parametrize('source_dir', [
-    "tests/test_files/bundles/api/etcd_valid_nested_bundle",
-    "tests/test_files/bundles/api/prometheus_valid_nested_bundle",
+    "tests/test_files/bundles/api/valid_flat_bundle_with_random_folder",
+    "tests/test_files/bundles/api/etcd_valid_nested_bundle_with_random_folder",
+    "tests/test_files/bundles/api/prometheus_valid_nested_bundle_2",
 ])
 def test_verify_valid_nested_sources_with_output(source_dir):
     with TemporaryDirectory() as temp_dir:
@@ -87,10 +92,10 @@ def test_verify_invalid_nested_sources_with_output(source_dir):
 
 @pytest.mark.parametrize('source_dir,error_message', [
     ("tests/test_files/yaml_source_dir/invalid_yamls_without_package",
-     "ERROR:operatorcourier.validate:Bundle does not contain any packages."),
+     "ERROR:operatorcourier.manifest_parser:Bundle does not contain any packages."),
     ("tests/test_files/yaml_source_dir/invalid_yamls_multiple_packages",
-     "ERROR:operatorcourier.validate:"
-     "Only 1 package is expected to exist per bundle, but got 2."),
+     "ERROR:operatorcourier.manifest_parser:"
+     "Only 1 package is expected to exist in source root folder."),
 ])
 def test_verify_invalid_sources(source_dir, error_message):
     process = subprocess.Popen(f'operator-courier verify {source_dir}',

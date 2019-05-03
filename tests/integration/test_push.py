@@ -46,12 +46,12 @@ def ensure_application_release_removed(repository_name, release_version):
     ('tests/test_files/yaml_source_dir/invalid_yamls_without_package',
      'oneagent',
      '0.0.1',
-     'ERROR:operatorcourier.validate:Bundle does not contain any packages.'),
+     'ERROR:operatorcourier.manifest_parser:Bundle does not contain any packages.'),
     ('tests/test_files/yaml_source_dir/invalid_yamls_multiple_packages',
      'oneagent',
      '0.0.1',
-     'ERROR:operatorcourier.validate:'
-     'Only 1 package is expected to exist per bundle, but got 2.'),
+     'ERROR:operatorcourier.manifest_parser:'
+     'Only 1 package is expected to exist in source root folder.'),
     ('tests/test_files/yaml_source_dir/valid_yamls_with_single_crd',
      'wrong-repo-name',
      '0.0.1',

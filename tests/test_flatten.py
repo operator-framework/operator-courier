@@ -89,7 +89,8 @@ import operatorcourier.flatten as flatten
         ('tests/test_files/bundles/flatten/etcd_valid_input_4/0.9.2/etcdcluster.crd.yaml',
          'etcdcluster.crd.yaml'),
     ]),
-    # if the source_dir is already flat, just return files
+    # if the source_dir is already flat (the "random folder" is ignored),
+    # just return files in source root directory
     ('tests/test_files/bundles/flatten/etcd_valid_input_5', [
         ('tests/test_files/bundles/flatten/etcd_valid_input_5/etcdbackup.crd.yaml',
          'etcdbackup.crd.yaml'),
@@ -102,6 +103,23 @@ import operatorcourier.flatten as flatten
          'etcdoperator.clusterserviceversion.yaml'),
         ('tests/test_files/bundles/flatten/etcd_valid_input_5/etcd.package.yaml',
          'etcd.package.yaml'),
+    ]),
+    # treat the source directory as in nested format when there is at least 1 valid
+    # manifest folder, even if there are valid CSVs specific in root directory
+    ('tests/test_files/bundles/flatten/etcd_valid_input_6', [
+        ('tests/test_files/bundles/flatten/etcd_valid_input_6/etcd.package.yaml',
+         'etcd.package.yaml'),
+
+        ('tests/test_files/bundles/flatten/etcd_valid_input_6/0.9/'
+         'etcdoperator.clusterserviceversion.yaml',
+         'etcdoperator.clusterserviceversion-v0.9.yaml'),
+
+        ('tests/test_files/bundles/flatten/etcd_valid_input_6/0.9/etcdrestore.crd.yaml',
+         'etcdrestore.crd.yaml'),
+        ('tests/test_files/bundles/flatten/etcd_valid_input_6/0.9/etcdbackup.crd.yaml',
+         'etcdbackup.crd.yaml'),
+        ('tests/test_files/bundles/flatten/etcd_valid_input_6/0.9/etcdcluster.crd.yaml',
+         'etcdcluster.crd.yaml'),
     ]),
 ])
 def test_flatten_with_valid_bundle(input_dir, expected_flattened_file_paths):
