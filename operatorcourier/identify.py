@@ -20,17 +20,14 @@ def get_operator_artifact_type(operatorArtifactString):
         logger.error(msg)
         raise OpCourierBadYaml(msg)
     else:
-        artifact_type, artifact_name = None, None
+        artifact_type = None
         if isinstance(operatorArtifact, dict):
             if "packageName" in operatorArtifact:
                 artifact_type = "Package"
-                artifact_name = operatorArtifact['packageName']
             elif operatorArtifact.get("kind") in ("ClusterServiceVersion",
                                                   "CustomResourceDefinition"):
                 artifact_type = operatorArtifact["kind"]
-                artifact_name = operatorArtifact['metadata']['name']
             if artifact_type is not None:
-                logger.info('Parsed %s: %s', artifact_type, artifact_name)
                 return artifact_type
 
         msg = 'Courier requires valid CSV, CRD, and Package files'
