@@ -207,158 +207,151 @@ class ValidateCmd():
             except KeyError:
                 pass
 
-        if "owned" not in customresourcedefinitions:
-            self._log_error("spec.customresourcedefinitions.owned"
-                            "not defined for csv")
-            return False
-
-        for csvOwnedCrd in customresourcedefinitions["owned"]:
-            if "name" not in csvOwnedCrd:
-                self._log_error("name not defined for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-            elif csvOwnedCrd["name"] not in crdList:
-                self._log_error("custom resource definition %s referenced in csv "
-                                "not defined in root list of crds",
-                                csvOwnedCrd["name"])
-                valid = False
-
-            if "kind" not in csvOwnedCrd:
-                self._log_error("kind not defined for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-            if "version" not in csvOwnedCrd:
-                self._log_error("version not defined for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-
-            # Values of name, version and kind above are compared with their
-            # values in the associated CRD files later. Empty string check
-            # is not needed.
-            # displayName and description should be checked for empty
-            # strings.
-            if "displayName" not in csvOwnedCrd:
-                self._log_error("displayName not defined for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-            elif not csvOwnedCrd["displayName"]:
-                self._log_error("displayName is empty for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-            if "description" not in csvOwnedCrd:
-                self._log_error("description not defined for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-            elif not csvOwnedCrd["description"]:
-                self._log_error("description is empty for item in "
-                                "spec.customresourcedefinitions.")
-                valid = False
-
-            if "specDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
-                if self._csv_descriptors_validation(
-                        csvOwnedCrd["specDescriptors"],
-                        csvOwnedCrd["name"]) is False:
+        if "owned" in customresourcedefinitions:
+            for csvOwnedCrd in customresourcedefinitions["owned"]:
+                if "name" not in csvOwnedCrd:
+                    self._log_error("name not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif csvOwnedCrd["name"] not in crdList:
+                    self._log_error("custom resource definition %s referenced in csv "
+                                    "not defined in root list of crds",
+                                    csvOwnedCrd["name"])
                     valid = False
 
-            if "statusDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
-                if self._csv_descriptors_validation(
-                        csvOwnedCrd["statusDescriptors"],
-                        csvOwnedCrd["name"]) is False:
+                if "kind" not in csvOwnedCrd:
+                    self._log_error("kind not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                if "version" not in csvOwnedCrd:
+                    self._log_error("version not defined for item in "
+                                    "spec.customresourcedefinitions.")
                     valid = False
 
-            if "actionDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
-                if self._csv_descriptors_validation(
-                        csvOwnedCrd["actionDescriptors"],
-                        csvOwnedCrd["name"]) is False:
+                # Values of name, version and kind above are compared with their
+                # values in the associated CRD files later. Empty string check
+                # is not needed.
+                # displayName and description should be checked for empty
+                # strings.
+                if "displayName" not in csvOwnedCrd:
+                    self._log_error("displayName not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif not csvOwnedCrd["displayName"]:
+                    self._log_error("displayName is empty for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                if "description" not in csvOwnedCrd:
+                    self._log_error("description not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif not csvOwnedCrd["description"]:
+                    self._log_error("description is empty for item in "
+                                    "spec.customresourcedefinitions.")
                     valid = False
 
-            for crd in bundleData[self.crdKey]:
-                if 'name' not in csvOwnedCrd:
-                    continue
-                if 'metadata' not in crd or 'name' not in crd['metadata']:
-                    continue
-                if csvOwnedCrd['name'] != crd['metadata']['name']:
-                    continue
+                if "specDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["specDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
 
-                if 'kind' in csvOwnedCrd:
-                    if 'spec' in crd:
-                        if 'names' in crd['spec']:
-                            if 'kind' in crd['spec']['names']:
-                                if csvOwnedCrd['kind'] != \
-                                        crd['spec']['names']['kind']:
-                                    self._log_error('CRD.spec.names.kind does not '
-                                                    'match CSV.spec.crd.owned.kind')
+                if "statusDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["statusDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
+
+                if "actionDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["actionDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
+
+                for crd in bundleData[self.crdKey]:
+                    if 'name' not in csvOwnedCrd:
+                        continue
+                    if 'metadata' not in crd or 'name' not in crd['metadata']:
+                        continue
+                    if csvOwnedCrd['name'] != crd['metadata']['name']:
+                        continue
+
+                    if 'kind' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'names' in crd['spec']:
+                                if 'kind' in crd['spec']['names']:
+                                    if csvOwnedCrd['kind'] != \
+                                            crd['spec']['names']['kind']:
+                                        self._log_error('CRD.spec.names.kind does not '
+                                                        'match CSV.spec.crd.owned.kind')
+                                        valid = False
+
+                    if 'version' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'version' in crd['spec']:
+                                if csvOwnedCrd['version'] != crd['spec']['version']:
+                                    self._log_error('CRD.spec.version does not match '
+                                                    'CSV.spec.crd.owned.version')
                                     valid = False
 
-                if 'version' in csvOwnedCrd:
-                    if 'spec' in crd:
-                        if 'version' in crd['spec']:
-                            if csvOwnedCrd['version'] != crd['spec']['version']:
-                                self._log_error('CRD.spec.version does not match '
-                                                'CSV.spec.crd.owned.version')
-                                valid = False
-
-                if 'name' in csvOwnedCrd:
-                    if 'spec' in crd:
-                        if 'names' in crd['spec'] and 'group' in crd['spec']:
-                            if 'plural' in crd['spec']['names']:
-                                if csvOwnedCrd['name'] != \
-                                        crd['spec']['names']['plural'] + '.' + \
-                                        crd['spec']['group']:
-                                    self._log_error("`CRD.spec.names.plural`."
-                                                    "`CRD.spec.group` does not "
-                                                    "match "
-                                                    "CSV.spec.crd.owned.name")
-                                    valid = False
+                    if 'name' in csvOwnedCrd:
+                        if 'spec' in crd:
+                            if 'names' in crd['spec'] and 'group' in crd['spec']:
+                                if 'plural' in crd['spec']['names']:
+                                    if csvOwnedCrd['name'] != \
+                                            crd['spec']['names']['plural'] + '.' + \
+                                            crd['spec']['group']:
+                                        self._log_error("`CRD.spec.names.plural`."
+                                                        "`CRD.spec.group` does not "
+                                                        "match "
+                                                        "CSV.spec.crd.owned.name")
+                                        valid = False
 
         return valid
 
     def _csv_asd_validation(self, apiservicedefinitions):
         valid = True
 
-        if "owned" not in apiservicedefinitions:
-            self._log_error("spec.apiservicedefinitions.owned"
-                            "not defined for csv")
-            return False
+        if "owned" in apiservicedefinitions:
+            # required attributes of owned apiservicedefinitions
+            attributeList = ["group", "version", "kind", "name", "deploymentName",
+                             "displayName", "description"]
 
-        # required attributes of owned apiservicedefinitions
-        attributeList = ["group", "version", "kind", "name", "deploymentName",
-                         "displayName", "description"]
+            # validate the owned apiservicedefinitions
+            def validate_owned(resource, attribute):
+                if attribute not in resource:
+                    self._log_error(
+                        "%s not defined for item in spec.apiservicedefinitions."
+                        % attribute)
+                    return False
+                elif not resource[attribute]:
+                    self._log_error("%s is empty for item in "
+                                    "spec.apiservicedefinitions." % attribute)
+                    return False
+                return True
 
-        # validate the owned apiservicedefinitions
-        def validate_owned(resource, attribute):
-            if attribute not in resource:
-                self._log_error(
-                    "%s not defined for item in spec.apiservicedefinitions." % attribute)
-                return False
-            elif not resource[attribute]:
-                self._log_error("%s is empty for item in "
-                                "spec.apiservicedefinitions." % attribute)
-                return False
-            return True
+            for csvOwnedAsd in apiservicedefinitions["owned"]:
+                for attr in attributeList:
+                    if validate_owned(csvOwnedAsd, attr) is False:
+                        valid = False
 
-        for csvOwnedAsd in apiservicedefinitions["owned"]:
-            for attr in attributeList:
-                if validate_owned(csvOwnedAsd, attr) is False:
-                    valid = False
+                if "specDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["specDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
 
-            if "specDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
-                if self._csv_descriptors_validation(
-                        csvOwnedAsd["specDescriptors"],
-                        csvOwnedAsd["name"]) is False:
-                    valid = False
+                if "statusDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["statusDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
 
-            if "statusDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
-                if self._csv_descriptors_validation(
-                        csvOwnedAsd["statusDescriptors"],
-                        csvOwnedAsd["name"]) is False:
-                    valid = False
-
-            if "actionDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
-                if self._csv_descriptors_validation(
-                        csvOwnedAsd["actionDescriptors"],
-                        csvOwnedAsd["name"]) is False:
-                    valid = False
+                if "actionDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["actionDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
 
         return valid
 
