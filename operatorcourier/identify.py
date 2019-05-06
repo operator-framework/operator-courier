@@ -2,6 +2,7 @@ from yaml import safe_load
 from yaml import MarkedYAMLError
 import logging
 from operatorcourier.errors import OpCourierBadYaml, OpCourierBadArtifact
+from operatorcourier.manifest_parser import CRD_STR, CSV_STR, PKG_STR
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,8 @@ def get_operator_artifact_type(operatorArtifactString):
         artifact_type = None
         if isinstance(operatorArtifact, dict):
             if "packageName" in operatorArtifact:
-                artifact_type = "Package"
-            elif operatorArtifact.get("kind") in ("ClusterServiceVersion",
-                                                  "CustomResourceDefinition"):
+                artifact_type = PKG_STR
+            elif operatorArtifact.get("kind") in {CRD_STR, CSV_STR}:
                 artifact_type = operatorArtifact["kind"]
             if artifact_type is not None:
                 return artifact_type
