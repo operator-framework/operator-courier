@@ -6,7 +6,7 @@ from operatorcourier.validate import ValidateCmd
 from operatorcourier.errors import OpCourierBadBundle
 from operatorcourier.format import format_bundle
 from operatorcourier.manifest_parser import \
-    is_manifest_folder, get_package_csv_info_from_root, get_crd_csv_files_content
+    is_manifest_folder, get_csvs_pkg_info_from_root, get_crd_csv_files_info
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,8 @@ class VerifiedManifest:
         manifests = {}
 
         root_path, dir_names, root_dir_files = next(os.walk(source_dir))
-        package_content, contains_csv = get_package_csv_info_from_root(source_dir)
+        csvs_path_and_content, pkg_path_and_content \
+            = get_csvs_pkg_info_from_root(source_dir)
 
         dir_paths = [os.path.join(source_dir, dir_name) for dir_name in dir_names]
         manifest_paths = list(filter(lambda x: is_manifest_folder(x), dir_paths))
@@ -62,23 +63,26 @@ class VerifiedManifest:
 
         # nested layout: add package to each manifest dict entry
         if manifest_paths:
-            self.nested = True
             logger.info('The source directory is in nested structure.')
+            self.nested = True
             for manifest_path in manifest_paths:
                 manifest_dir_name = os.path.basename(manifest_path)
+
                 files_content = []
-                for content in get_crd_csv_files_content(manifest_path).values():
-                    files_content.extend(content)
+                crd_files_info, csv_files_info = get_crd_csv_files_info(manifest_path)
+                for (_, file_content) in (crd_files_info + csv_files_info):
+                    files_content.append(file_content)
                 manifests[manifest_dir_name] = files_content
             for manifest_dir_name in manifests:
-                manifests[manifest_dir_name].append(package_content)
+                manifests[manifest_dir_name].append(pkg_path_and_content[1])
         # flat layout: collect all valid manifest files and add to FLAT_KEY entry
-        elif package_content and contains_csv:
+        elif pkg_path_and_content and csvs_path_and_content:
             logger.info('The source directory is in flat structure.')
-            files_content = []
-            for content in get_crd_csv_files_content(root_path).values():
-                files_content.extend(content)
-            files_content.append(package_content)
+            crd_files_info, csv_files_info = get_crd_csv_files_info(root_path)
+            files_content = [pkg_path_and_content[1]]
+            files_content.extend(
+                [file_content for (_, file_content) in (crd_files_info + csv_files_info)])
+
             manifests[FLAT_KEY] = files_content
         else:
             msg = 'The source directory structure is not in valid flat or nested format,'\

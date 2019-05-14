@@ -1,38 +1,36 @@
+import pytest
 import os
-from filecmp import dircmp
 from tempfile import TemporaryDirectory
 from operatorcourier.nest import nest_bundles
 
 
-def test_nest_default():
-    with TemporaryDirectory() as registry_dir:
-        expected_result = "tests/test_files/bundles/nest/bundle1result"
-        folder_to_nest = "tests/test_files/bundles/nest/bundle1"
+@pytest.mark.parametrize('folder_to_nest,expected_output_dir', [
+    ("tests/test_files/bundles/nest/flat_bundle1",
+     "tests/test_files/bundles/nest/flat_bundle1_result"),
 
-        yaml_files = []
-        for filename in os.listdir(folder_to_nest):
-            with open(folder_to_nest + "/" + filename) as f:
-                yaml_files.append(f.read())
+    ("tests/test_files/bundles/nest/flat_bundle2_without_crds",
+     "tests/test_files/bundles/nest/flat_bundle2_without_crds_result"),
 
-        with TemporaryDirectory() as temp_dir:
-            nest_bundles(yaml_files, registry_dir, temp_dir)
+    ("tests/test_files/bundles/nest/nested_bundle1",
+     "tests/test_files/bundles/nest/nested_bundle1_result"),
+])
+def test_nest(folder_to_nest, expected_output_dir):
+    with TemporaryDirectory() as output_dir:
+        nest_bundles(folder_to_nest, output_dir)
+        assert _get_dir_file_paths(output_dir) == _get_dir_file_paths(expected_output_dir)
 
-        dcmp = dircmp(registry_dir, expected_result)
-        assert(len(dcmp.diff_files) == 0)
 
+def _get_dir_file_paths(source_dir):
+    """
+    :param source_dir: the path of the input directory
+    :return: a set of relative paths of all files inside input directory and
+             its subdirectories
+    """
+    file_paths = set()
 
-def test_nest_no_crds():
-    with TemporaryDirectory() as registry_dir:
-        expected_result = "tests/test_files/bundles/nest/bundle2result"
-        folder_to_nest = "tests/test_files/bundles/nest/bundle2"
-
-        yaml_files = []
-        for filename in os.listdir(folder_to_nest):
-            with open(folder_to_nest + "/" + filename) as f:
-                yaml_files.append(f.read())
-
-        with TemporaryDirectory() as temp_dir:
-            nest_bundles(yaml_files, registry_dir, temp_dir)
-
-        dcmp = dircmp(registry_dir, expected_result)
-        assert(len(dcmp.diff_files) == 0)
+    source_dir = os.path.join(source_dir, '')  # adds a trailing slash if missing
+    for root_path, dir_names, file_names in os.walk(source_dir):
+        dir_path_relative = root_path[len(source_dir):]
+        for file_name in file_names:
+            file_paths.add(os.path.join(dir_path_relative, file_name))
+    return file_paths

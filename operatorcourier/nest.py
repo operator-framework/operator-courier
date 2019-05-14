@@ -2,12 +2,66 @@ from distutils.dir_util import copy_tree
 import logging
 import os
 import yaml
-import operatorcourier.identify as identify
+from shutil import copyfile
+from tempfile import TemporaryDirectory
+from operatorcourier import identify
+from operatorcourier.errors import OpCourierBadBundle
+from operatorcourier.manifest_parser import \
+    is_manifest_folder, get_csvs_pkg_info_from_root, get_crd_csv_files_info, \
+    CRD_STR, CSV_STR, PKG_STR
+
 
 logger = logging.getLogger(__name__)
 
 
-def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
+def nest_bundles(source_dir, output_dir):
+    root_path, dir_names, root_dir_files = next(os.walk(source_dir))
+    csvs_info, pkg_info = get_csvs_pkg_info_from_root(source_dir)
+
+    dir_paths = [os.path.join(source_dir, dir_name) for dir_name in dir_names]
+    manifest_paths = list(filter(lambda x: is_manifest_folder(x), dir_paths))
+
+    # nested layout
+    if manifest_paths:
+        logger.warning('The source directory is already nested.')
+
+        # extract paths of package file in root dir and
+        # valid CRD/CSV files from subdirectories, and ignore irrelevant ones
+        manifest_files_path = [pkg_info[0]]
+
+        for manifest_path in manifest_paths:
+            crds_info, csvs_info = get_crd_csv_files_info(manifest_path)
+            crd_csv_file_paths = [file_info[0] for file_info in (crds_info + csvs_info)]
+            manifest_files_path.extend(crd_csv_file_paths)
+
+        # copy all manifest files to output_dir with folder structure preserved
+        source_dir = os.path.join(source_dir, '')  # adds a trailing slash if missing
+        os.makedirs(output_dir, exist_ok=True)
+        for file_path in manifest_files_path:
+            file_path_relative = file_path[len(source_dir):]
+            output_file_path = os.path.join(output_dir, file_path_relative)
+            os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+            copyfile(file_path, output_file_path)
+
+    # flat layout
+    elif csvs_info and pkg_info:
+        # extract all valid manifest (CRD, CSV, PKG) files from root
+        # and make nested bundles
+        crds_info, csvs_info = get_crd_csv_files_info(source_dir)
+        with TemporaryDirectory() as temp_dir:
+            manifest_files_content = [pkg_info[1]]
+            manifest_files_content.extend(
+                [file_content for (_, file_content) in (crds_info + csvs_info)])
+
+            nest_flat_bundles(manifest_files_content, output_dir, temp_dir)
+    else:
+        msg = 'The source directory structure is not in valid flat or nested format,' \
+              'because no valid CSV file is found in root or manifest directories.'
+        logger.error(msg)
+        raise OpCourierBadBundle(msg, {})
+
+
+def nest_flat_bundles(manifest_files_content, output_dir, temp_registry_dir):
     package = {}
     crds = {}
     csvs = []
@@ -15,21 +69,21 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
     errors = []
 
     # first lets parse all the files
-    for yaml_string in yaml_files:
+    for yaml_string in manifest_files_content:
         yaml_type = identify.get_operator_artifact_type(yaml_string)
-        if yaml_type == "Package":
+        if yaml_type == PKG_STR:
             if not package:
                 package = yaml.safe_load(yaml_string)
             else:
                 errors.append("Multiple packages in directory.")
-        if yaml_type == "CustomResourceDefinition":
+        if yaml_type == CRD_STR:
             crd = yaml.safe_load(yaml_string)
             if "metadata" in crd and "name" in crd["metadata"]:
                 crd_name = crd["metadata"]["name"]
                 crds[crd_name] = crd
             else:
                 errors.append("CRD has no `metadata.name` field defined")
-        if yaml_type == "ClusterServiceVersion":
+        if yaml_type == CSV_STR:
             csv = yaml.safe_load(yaml_string)
             csvs.append(csv)
 
@@ -71,7 +125,7 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
             if not os.path.exists(csv_folder):
                 os.makedirs(csv_folder)
 
-            csv_path = '%s/%s.clusterserviceversion.yaml' % (csv_folder, csv_name)
+            csv_path = os.path.join(csv_folder, f'{csv_name}.clusterserviceversion.yaml')
             with open(csv_path, 'w') as outfile:
                 yaml.dump(csv, outfile, default_flow_style=False)
                 outfile.flush()
@@ -100,9 +154,9 @@ def nest_bundles(yaml_files, registry_dir, temp_registry_dir):
 
     # if no errors were encountered, lets create the real directory and populate it.
     if len(errors) == 0:
-        if not os.path.exists(registry_dir):
-            os.makedirs(registry_dir)
-        copy_tree(temp_registry_dir, registry_dir)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        copy_tree(temp_registry_dir, output_dir)
     else:
         for err in errors:
             logger.error(err)

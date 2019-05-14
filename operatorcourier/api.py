@@ -99,9 +99,16 @@ def build_verify_and_push(namespace, repository, revision, token,
             PushCmd().push(temp_dir, namespace, repository, revision, token)
 
 
-def nest(source_dir, registry_dir):
+def nest(source_dir, output_dir):
     """Nest takes a flat bundle directory and version nests it
     to eventually be consumed as part of an operator-registry image build.
+
+    This method will only extract valid operator manifest files and folders
+    and ignore the rest.
+
+    If the input directory is already nested, this method will copy the files and
+    folders as is, with non-manifest files and folders excluded.
+
 
     :param source_dir: Path to local directory of yaml files to be read
     :param output_dir: Path of your directory to be populated.
@@ -110,17 +117,8 @@ def nest(source_dir, registry_dir):
     :raises OpCourierBadYaml: When an invalid yaml file is encountered
     :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     """
-
-    yaml_files = []
-
-    if source_dir is not None:
-        for filename in os.listdir(source_dir):
-            if filename.endswith(".yaml") or filename.endswith(".yml"):
-                with open(os.path.join(source_dir, filename)) as f:
-                    yaml_files.append(f.read())
-
-    with TemporaryDirectory() as temp_dir:
-        nest_bundles(yaml_files, registry_dir, temp_dir)
+    if source_dir and output_dir:
+        nest_bundles(source_dir, output_dir)
 
 
 def flatten(source_dir, dest_dir):

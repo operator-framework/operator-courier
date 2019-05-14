@@ -7,7 +7,7 @@ import semver
 from operatorcourier import identify
 from operatorcourier.errors import OpCourierBadBundle, OpCourierBadYaml
 from operatorcourier.manifest_parser \
-    import is_manifest_folder, get_package_csv_info_from_root, is_yaml_file
+    import is_manifest_folder, get_csvs_pkg_info_from_root, is_yaml_file
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,8 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
     # get package content and check if CSV exists in source_dir root, and
     # process all subdirectories and filter those that do not contain valid manifest files
     root_path, dir_names, root_dir_files = next(os.walk(source_dir))
-    package_content, contains_csv = get_package_csv_info_from_root(source_dir)
+    csvs_path_and_content, pkg_path_and_content \
+        = get_csvs_pkg_info_from_root(source_dir)
 
     dir_paths = [os.path.join(source_dir, dir_name) for dir_name in dir_names]
     manifest_paths = list(filter(lambda x: is_manifest_folder(x), dir_paths))
@@ -50,7 +51,7 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
                                   csv_paths, crd_dict)
 
         # add package in source_dir
-        package_path = get_package_path(source_dir, root_dir_files)
+        package_path = pkg_path_and_content[0]
         file_paths_to_copy.append((package_path, os.path.basename(package_path)))
 
         # add all CRDs with the latest version
@@ -65,7 +66,7 @@ def get_flattened_files_info(source_dir: str) -> [(str, str)]:
 
         return file_paths_to_copy
     # flat layout
-    elif package_content and contains_csv:
+    elif pkg_path_and_content and csvs_path_and_content:
         logger.info('The source directory is already flat.')
         # just return files from dir as they are already flat
         return [(os.path.join(source_dir, name), name) for name in root_dir_files]
@@ -162,37 +163,6 @@ def parse_manifest_folder(manifest_path: str, folder_semver: str,
         msg = 'This version directory does not contain any valid CSV file.'
         logger.error(msg)
         raise OpCourierBadBundle(msg, {})
-
-
-def get_package_path(base_dir: str, file_names_in_base_dir: list) -> str:
-    package_path = None
-
-    # add package file to file_paths_to_copy
-    # only 1 package yaml file is expected in file_names
-    for file_name in file_names_in_base_dir:
-        file_path = os.path.join(base_dir, file_name)
-        if not is_yaml_file(file_path):
-            logger.warning('Ignoring %s as the file does not end with .yaml or .yml',
-                           file_path)
-            continue
-
-        with open(file_path, 'r') as f:
-            file_content = f.read()
-
-        if identify.get_operator_artifact_type(file_content) == 'Package':
-            if not package_path:
-                package_path = file_path
-            else:
-                msg = f'The input source directory expects only 1 valid package file.'
-                logger.error(msg)
-                raise OpCourierBadBundle(msg, {})
-
-    if not package_path:
-        msg = f'The input source directory expects at least 1 valid package file.'
-        logger.error(msg)
-        raise OpCourierBadBundle(msg, {})
-
-    return package_path
 
 
 # parse all CSVs and ensure those with same names are handled
