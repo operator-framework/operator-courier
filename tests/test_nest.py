@@ -28,9 +28,8 @@ def _get_dir_file_paths(source_dir):
     """
     file_paths = set()
 
-    source_dir = os.path.join(source_dir, '')  # adds a trailing slash if missing
     for root_path, dir_names, file_names in os.walk(source_dir):
-        dir_path_relative = root_path[len(source_dir):]
+        dir_path_relative = os.path.relpath(root_path, source_dir)
         for file_name in file_names:
             file_paths.add(os.path.join(dir_path_relative, file_name))
     return file_paths
