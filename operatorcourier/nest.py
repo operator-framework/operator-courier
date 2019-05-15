@@ -35,10 +35,9 @@ def nest_bundles(source_dir, output_dir):
             manifest_files_path.extend(crd_csv_file_paths)
 
         # copy all manifest files to output_dir with folder structure preserved
-        source_dir = os.path.join(source_dir, '')  # adds a trailing slash if missing
         os.makedirs(output_dir, exist_ok=True)
         for file_path in manifest_files_path:
-            file_path_relative = file_path[len(source_dir):]
+            file_path_relative = os.path.relpath(file_path, source_dir)
             output_file_path = os.path.join(output_dir, file_path_relative)
             os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
             copyfile(file_path, output_file_path)
