@@ -536,6 +536,7 @@ class ValidateCmd():
         def is_category(category):
             valid_categories = [
                 "AI/Machine Learning",
+                "Application Runtime",
                 "Big Data",
                 "Cloud Provider",
                 "Developer Tools",
