@@ -7,14 +7,29 @@ The Operator Courier is used to build, validate and push Operator Artifacts.
 
 Operator Courier is currently supported on Python 3.6 and above.
 
+## Installation
+
+- To install the latest version of operator-courier, just install the latest release from [PyPI](https://pypi.org/project/operator-courier/):
+
+  ```bash
+  $ pip3 install operator-courier
+  ```
+
+- To install a specific release, use the `==` operator and specify the version. For example:
+
+  ```bash
+  $ pip3 install operator-courier==2.0.1
+  ```
+    
+- To upgrade an existing operator-courier release:
+
+  ```bash
+  $ pip3 install -U operator-courier
+  ```
+
 ## Usage
 
 ### Command Line Interface
-To install the operator courier project to use from the command line, just install the latest release from [PyPI](https://pypi.org/project/operator-courier/):
-
-```bash
-$ pip3 install operator-courier
-```
 
 Once the project is installed, you can run the `verify` command on a directory that adheres to the expected [Manifest format](https://github.com/operator-framework/operator-registry#manifest-format).
 
