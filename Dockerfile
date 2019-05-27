@@ -1,5 +1,8 @@
 FROM python:3
 
-RUN pip3 install operator-courier
+ADD . /repo
+WORKDIR /repo
+RUN pip3 install .
+RUN rm -rf /repo
 
 CMD [ "operator-courier", "--help"]
