@@ -95,9 +95,10 @@ $ tox
 This will run the tests with several versions of Python 3, measure coverage,
 and run flake8 for code linting.
 
-## Run in Docker
+## Building the docker image
 ```
-docker run tufin/operator-courier operator-courier
+docker build Dockerfile -t $TAG
+docker run $TAG operator-courier
 ```
 
 For further details, please see the [contribution guide](docs/contributing.md).
