@@ -1,6 +1,7 @@
 import logging
 import json
 import semver
+import yaml
 
 import validators as v
 
@@ -10,11 +11,19 @@ from .const_io import (
     metadata_annotations_required_fields,
     spec_required_fields)
 
+log_info = {'current_manifest_file': ''}
 logger = logging.getLogger(__name__)
+logger.propagate = False
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(levelname)s: %(message)s [%(current_manifest_file)s]')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger = logging.LoggerAdapter(logger, log_info)
 
 
 class ValidateCmd():
     dataKey = "data"
+    metadataKey = "metadata"
     crdKey = "customResourceDefinitions"
     csvKey = "clusterServiceVersions"
     pkgsKey = "packages"
@@ -46,6 +55,17 @@ class ValidateCmd():
         self.validation_json['errors'].append(message % args)
         logger.error(message, *args, **kwargs)
 
+    def get_filename_from_metadata(self, metadata, yaml_dict):
+        """
+        :param yaml_dict: The yaml dictionary associated with a filename
+        :return: Filename associated with a yaml dictionary
+        """
+        filename = ""
+        hashed_key = hash(yaml.dump(yaml_dict))
+        if hashed_key in metadata["filenames"]:
+            filename = metadata["filenames"][hashed_key]
+        return filename
+
     def validate(self, bundle, repository=None):
         """validate takes a bundle as a dictionary and returns a boolean value that
         describes if the bundle is valid. It also logs verification information when
@@ -69,15 +89,15 @@ class ValidateCmd():
 
         bundleData = bundle[self.dataKey]
 
-        validationDict[self.crdKey] = self._type_validation(bundleData, self.crdKey,
+        validationDict[self.crdKey] = self._type_validation(bundle, self.crdKey,
                                                             self._crd_validation, False)
-        validationDict[self.csvKey] = self._type_validation(bundleData, self.csvKey,
+        validationDict[self.csvKey] = self._type_validation(bundle, self.csvKey,
                                                             self._csv_validation, True)
-        validationDict[self.pkgsKey] = self._type_validation(bundleData, self.pkgsKey,
+        validationDict[self.pkgsKey] = self._type_validation(bundle, self.pkgsKey,
                                                              self._pkgs_validation, True)
         if self.ui_validate_io:
             validationDict[self.csvKey] &= self._type_validation(
-                bundleData, self.csvKey, self._ui_validation_io, True)
+                bundle, self.csvKey, self._ui_validation_io, True)
         if validationDict[self.pkgsKey] and repository is not None:
             packageName = bundleData['packages'][0]['packageName']
             if repository != packageName:
@@ -93,13 +113,18 @@ class ValidateCmd():
 
         return valid
 
-    def _crd_validation(self, bundleData):
+    def _crd_validation(self, bundle):
         logger.info("Validating custom resource definitions.")
         valid = True
 
+        bundle_metadata = bundle[self.metadataKey]
+        bundleData = bundle[self.dataKey]
         crds = bundleData[self.crdKey]
 
         for crd in crds:
+            crd_file_name = self.get_filename_from_metadata(bundle_metadata, crd)
+            log_info['current_manifest_file'] = crd_file_name
+
             if "metadata" in crd:
                 if "name" in crd["metadata"]:
                     logger.info("Evaluating crd %s", crd["metadata"]["name"])
@@ -137,13 +162,18 @@ class ValidateCmd():
 
         return valid
 
-    def _csv_validation(self, bundleData):
+    def _csv_validation(self, bundle):
         valid = True
         logger.info("Validating cluster service versions.")
 
+        bundle_metadata = bundle[self.metadataKey]
+        bundleData = bundle[self.dataKey]
         csvs = bundleData[self.csvKey]
 
         for csv in csvs:
+            csv_file_name = self.get_filename_from_metadata(bundle_metadata, csv)
+            log_info['current_manifest_file'] = csv_file_name
+
             if "metadata" in csv:
                 if self._csv_metadata_validation(csv["metadata"]) is False:
                     valid = False
@@ -357,10 +387,12 @@ class ValidateCmd():
 
         return valid
 
-    def _pkgs_validation(self, bundleData):
+    def _pkgs_validation(self, bundle):
         valid = True
         logger.info("Validating packages.")
 
+        bundle_metadata = bundle[self.metadataKey]
+        bundleData = bundle[self.dataKey]
         pkgs = bundleData[self.pkgsKey]
 
         num_pkgs = len(pkgs)
@@ -370,6 +402,8 @@ class ValidateCmd():
             return False
 
         pkg = pkgs[0]
+        pkg_file_name = self.get_filename_from_metadata(bundle_metadata, pkg)
+        log_info['current_manifest_file'] = pkg_file_name
 
         if "packageName" in pkg:
             logger.info("Evaluating package %s", pkg["packageName"])
@@ -409,11 +443,13 @@ class ValidateCmd():
 
         return valid
 
-    def _type_validation(self, bundleData, typeName, validator, required):
+    def _type_validation(self, bundle, typeName, validator, required):
+        bundleData = bundle[self.dataKey]
+
         valid = True
         if typeName in bundleData:
             if len(bundleData[typeName]) != 0:
-                valid = validator(bundleData)
+                valid = validator(bundle)
             elif required:
                 self._log_error("Bundle does not contain any %s." % typeName)
                 valid = False
@@ -423,10 +459,11 @@ class ValidateCmd():
 
         return valid
 
-    def _ui_validation_io(self, bundleData):
+    def _ui_validation_io(self, bundle):
         valid = True
         logger.info("Validating cluster service versions for operatorhub.io UI.")
 
+        bundleData = bundle[self.dataKey]
         csvs = bundleData[self.csvKey]
 
         for csv in csvs:

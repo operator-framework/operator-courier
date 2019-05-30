@@ -2,7 +2,6 @@ import yaml
 import pytest
 from operatorcourier.validate import ValidateCmd
 from operatorcourier.format import unformat_bundle
-from testfixtures import LogCapture
 
 
 @pytest.mark.parametrize('bundle,expected_validation_results_dict', [
@@ -115,14 +114,9 @@ def test_valid_bundles_with_multiple_packages(file_name):
     with open(file_name) as f:
         bundle = yaml.safe_load(f)
         bundle = unformat_bundle(bundle)
-
-    with LogCapture() as logs:
         valid, _ = ValidateCmd().validate(bundle)
 
     assert not valid
-    logs.check_present(('operatorcourier.validate',
-                        'ERROR',
-                        'Only 1 package is expected to exist per bundle, but got 2.'))
 
 
 def get_ui_validation_results(bundle):
@@ -139,56 +133,30 @@ def get_bundle(bundle):
     return unformat_bundle(bundle)
 
 
-@pytest.mark.parametrize('bundleFile,logInfo', [
-    ('tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'Bundle does not contain any packages.')),
-
-    ('tests/test_files/bundles/verification/crdmissingkindfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.names.kind not defined.')),
-    ('tests/test_files/bundles/verification/crdmissingpluralfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.names.plural not defined.')),
-    ('tests/test_files/bundles/verification/crdmissingversionfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR', 'crd spec.version not defined.')),
-
-    ('tests/test_files/bundles/verification/csvmissingkindfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      'kind not defined for item in spec.customresourcedefinitions.')),
-    ('tests/test_files/bundles/verification/csvmissingnamefield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      'name not defined for item in spec.customresourcedefinitions.')),
-    ('tests/test_files/bundles/verification/csvmissingversionfield.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      'version not defined for item in spec.customresourcedefinitions.')),
+@pytest.mark.parametrize('bundleFile', [
+    ('tests/test_files/bundles/verification/nopkg.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/crdmissingpluralfield.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/crdmissingversionfield.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/csvmissingkindfield.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/csvmissingnamefield.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/csvmissingversionfield.invalid.bundle.yaml'),
 ])
-def test_invalid_bundle_missing_fields(bundleFile, logInfo):
-    _test_invalid_bundle_with_log(bundleFile, logInfo)
+def test_invalid_bundle_missing_fields(bundleFile):
+    _test_invalid_bundle(bundleFile)
 
 
-@pytest.mark.parametrize('bundleFile,logInfo', [
-    ('tests/test_files/bundles/verification/csvcrdfieldmismatch1.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      'CRD.spec.names.kind does not match CSV.spec.crd.owned.kind')),
-    ('tests/test_files/bundles/verification/csvcrdfieldmismatch2.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      'CRD.spec.version does not match CSV.spec.crd.owned.version')),
-    ('tests/test_files/bundles/verification/csvcrdfieldmismatch3.invalid.bundle.yaml',
-     ('operatorcourier.validate', 'ERROR',
-      '`CRD.spec.names.plural`.`CRD.spec.group` does not match CSV.spec.crd.owned.name')),
+@pytest.mark.parametrize('bundleFile', [
+    ('tests/test_files/bundles/verification/csvcrdfieldmismatch1.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/csvcrdfieldmismatch2.invalid.bundle.yaml'),
+    ('tests/test_files/bundles/verification/csvcrdfieldmismatch3.invalid.bundle.yaml'),
 ])
-def test_invalid_bundle_crd_csv_fields_mismatch(bundleFile, logInfo):
-    _test_invalid_bundle_with_log(bundleFile, logInfo)
+def test_invalid_bundle_crd_csv_fields_mismatch(bundleFile):
+    _test_invalid_bundle(bundleFile)
 
 
-def _test_invalid_bundle_with_log(bundleFile, logInfo):
+def _test_invalid_bundle(bundleFile):
     with open(bundleFile) as f:
         bundle = yaml.safe_load(f)
-        bundle = unformat_bundle(bundle)
-        module, level, message = logInfo[0], logInfo[1], logInfo[2]
-        with LogCapture() as logs:
-            valid, _ = ValidateCmd().validate(bundle)
+        unformatted_bundle = unformat_bundle(bundle)
+        valid, _ = ValidateCmd().validate(unformatted_bundle)
         assert not valid
-
-        # check if the input log info is present among all logs captured
-        logs.check_present(
-            (module, level, message),
-        )

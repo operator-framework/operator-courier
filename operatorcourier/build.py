@@ -1,3 +1,4 @@
+import os
 import yaml
 import operatorcourier.identify as identify
 
@@ -9,6 +10,9 @@ class BuildCmd():
                 customResourceDefinitions=[],
                 clusterServiceVersions=[],
                 packages=[],
+            ),
+            metadata=dict(
+                filenames=dict()
             )
         )
 
@@ -16,19 +20,48 @@ class BuildCmd():
         yaml_type = identify.get_operator_artifact_type(yamlContent)
         return yaml_type[0:1].lower() + yaml_type[1:] + 's'
 
-    def _updateBundle(self, operatorBundle, yamlContent):
-        field_entry = operatorBundle["data"][self._get_field_entry(yamlContent)]
-        field_entry.append(yaml.safe_load(yamlContent))
+    def _get_relative_path(self, path):
+        """
+        :param path: the path of the file
+        :return: the file name along with its parent folder
+        """
+        path = os.path.normpath(path)
+        parts = path.split(os.sep)
+        return os.path.join(parts[-2], parts[-1])
+
+    def _updateBundle(self, operatorBundle, file_name, yaml_string):
+        # Determine which operator file type the yaml is
+        operator_artifact = self._get_field_entry(yaml_string)
+
+        # Marshal the yaml into a dictionary
+        yaml_data = yaml.safe_load(yaml_string)
+
+        # Add the data dictionary to the correct list
+        operatorBundle["data"][operator_artifact].append(yaml_data)
+
+        # Encode the dictionary into a string, then use that as a key to reference
+        # the file name associated with that yaml file. Then add it to the metadata.
+        if file_name != "":
+            unencoded_yaml = yaml.dump(yaml_data)
+            relative_path = self._get_relative_path(file_name)
+            operatorBundle["metadata"]["filenames"][hash(unencoded_yaml)] = relative_path
+
         return operatorBundle
 
-    def build_bundle(self, strings):
-        """build_bundle takes an array of yaml files and generates a 'bundle'
+    def build_bundle(self, bundle_data):
+        """build_bundle takes bundle_data, a list of yaml files and
+        associated metadata, and generates a 'bundle'
         with those yaml files generated in the bundle format.
 
-        :param strings: Array of yaml strings to bundle
+        :param bundle_data: Array of tuples consisting of yaml blobs
+        and associated metadata for those blobs
         """
+        # Generate an empty bundle
         bundle = self._get_empty_bundle()
-        for item in strings:
-            bundle = self._updateBundle(bundle, item)
+
+        # For each file, append the file to the right place in the bundle
+        # and add the associated metadata to the metadata field
+        for data in bundle_data:
+            bundle = self._updateBundle(bundle, data[0], data[1])
 
         return bundle
