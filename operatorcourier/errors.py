@@ -23,11 +23,6 @@ class OpCourierBadYaml(OpCourierValueError):
     pass
 
 
-class OpCourierBadArtifact(OpCourierValueError):
-    """File is a valid yaml, but not a valid CSV, CRD or Package"""
-    pass
-
-
 class OpCourierBadBundle(OpCourierValueError):
     """Invalid bundle (e.g. missing CSV/CRD/Package).
     Contains the info collected during validation of the bundle.
