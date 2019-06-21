@@ -1,19 +1,24 @@
 from yaml import safe_load
 from yaml import MarkedYAMLError
 import logging
-from operatorcourier.errors import OpCourierBadYaml, OpCourierBadArtifact
+from operatorcourier.errors import OpCourierBadYaml
 from operatorcourier.manifest_parser import CRD_STR, CSV_STR, PKG_STR
 
 logger = logging.getLogger(__name__)
 
+UNKNOWN_FILE = "Unknown"
+
 
 def get_operator_artifact_type(operatorArtifactString):
     """get_operator_artifact_type takes a yaml string and determines if it is
-    one of the expected bundle types: ClusterServiceVersion,
-    CustomResourceDefinition, or Package.
+    one of the expected bundle types.
 
     :param operatorArtifactString: Yaml string to type check
     """
+
+    # Default to unknown file unless identified
+    artifact_type = UNKNOWN_FILE
+
     try:
         operatorArtifact = safe_load(operatorArtifactString)
     except MarkedYAMLError:
@@ -21,15 +26,9 @@ def get_operator_artifact_type(operatorArtifactString):
         logger.error(msg)
         raise OpCourierBadYaml(msg)
     else:
-        artifact_type = None
         if isinstance(operatorArtifact, dict):
             if "packageName" in operatorArtifact:
                 artifact_type = PKG_STR
             elif operatorArtifact.get("kind") in {CRD_STR, CSV_STR}:
                 artifact_type = operatorArtifact["kind"]
-            if artifact_type is not None:
-                return artifact_type
-
-        msg = 'Courier requires valid CSV, CRD, and Package files'
-        logger.error(msg)
-        raise OpCourierBadArtifact(msg)
+        return artifact_type

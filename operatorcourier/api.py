@@ -37,7 +37,6 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
     :raises TypeError: When called with both source_dir and yamls specified
 
     :raises OpCourierBadYaml: When an invalid yaml file is encountered
-    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     :raises OpCourierBadBundle: When the resulting bundle fails validation
     """
 
@@ -78,7 +77,6 @@ def build_verify_and_push(namespace, repository, revision, token,
     :raises TypeError: When called with both source_dir and yamls specified
 
     :raises OpCourierBadYaml: When an invalid yaml file is encountered
-    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     :raises OpCourierBadBundle: When the resulting bundle fails validation
 
     :raises OpCourierQuayCommunicationError: When communication with Quay fails
@@ -115,7 +113,6 @@ def nest(source_dir, output_dir):
                        If directory does not exist, it will be created.
 
     :raises OpCourierBadYaml: When an invalid yaml file is encountered
-    :raises OpCourierBadArtifact: When a file is not any of {CSV, CRD, Package}
     """
     if source_dir and output_dir:
         nest_bundles(source_dir, output_dir)
