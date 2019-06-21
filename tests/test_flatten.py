@@ -121,6 +121,22 @@ import operatorcourier.flatten as flatten
         ('tests/test_files/bundles/flatten/etcd_valid_input_6/0.9/etcdcluster.crd.yaml',
          'etcdcluster.crd.yaml'),
     ]),
+    # Ignore extraneous files
+    ('tests/test_files/bundles/flatten/etcd_valid_input_7', [
+        ('tests/test_files/bundles/flatten/etcd_valid_input_7/etcd.package.yaml',
+         'etcd.package.yaml'),
+
+        ('tests/test_files/bundles/flatten/etcd_valid_input_7/0.9/'
+         'etcdoperator.clusterserviceversion.yaml',
+         'etcdoperator.clusterserviceversion-v0.9.yaml'),
+
+        ('tests/test_files/bundles/flatten/etcd_valid_input_7/0.9/etcdrestore.crd.yaml',
+         'etcdrestore.crd.yaml'),
+        ('tests/test_files/bundles/flatten/etcd_valid_input_7/0.9/etcdbackup.crd.yaml',
+         'etcdbackup.crd.yaml'),
+        ('tests/test_files/bundles/flatten/etcd_valid_input_7/0.9/etcdcluster.crd.yaml',
+         'etcdcluster.crd.yaml'),
+    ]),
 ])
 def test_flatten_with_valid_bundle(input_dir, expected_flattened_file_paths):
     actual_flattened_file_paths = flatten.get_flattened_files_info(input_dir)

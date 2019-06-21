@@ -1,0 +1,15 @@
+updates:
+  - file: "{MAJOR}.{MINOR}/etcdoperator.v{MAJOR}.{MINOR}.0.clusterserviceversion.yaml" # relative to this file
+    update_list:
+    # replace metadata.name value
+    - search: "etcdoperator.v{MAJOR}.{MINOR}.2"
+      replace: "etcdoperator.{FULL_VER}"
+    # replace entire version line, otherwise would replace 4.1.0 anywhere
+    - search: "version: 4.1.2"
+      replace: "version: {FULL_VER}"
+    - search: 'olm.skipRange: ">=4.1.0 <4.1.2"'
+      replace: 'olm.skipRange: ">=4.1.0 <{FULL_VER}"'
+  - file: "package.yaml"
+    update_list:
+    - search: "currentCSV: etcdoperator.v{MAJOR}.{MINOR}.2"
+      replace: "currentCSV: etcdoperator.{FULL_VER}"

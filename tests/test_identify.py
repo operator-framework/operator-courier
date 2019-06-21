@@ -1,6 +1,6 @@
 import pytest
 import operatorcourier.identify as identify
-from operatorcourier.errors import OpCourierBadYaml, OpCourierBadArtifact
+from operatorcourier.errors import OpCourierBadYaml
 from testfixtures import LogCapture
 
 
@@ -16,19 +16,15 @@ def test_get_operator_artifact_type(fname, expected):
 
 
 @pytest.mark.parametrize('fname', [
-    ("tests/test_files/invalid.yaml"),
     ("tests/test_files/empty.yaml"),
+    ("tests/test_files/invalid.yaml"),
 ])
 def test_get_operator_artifact_type_assertions(fname):
     with open(fname) as f:
         yaml = f.read()
-    with pytest.raises(OpCourierBadArtifact) as e, LogCapture() as logs:
-        identify.get_operator_artifact_type(yaml)
+        result = identify.get_operator_artifact_type(yaml)
 
-    logs.check(('operatorcourier.identify',
-                'ERROR',
-                'Courier requires valid CSV, CRD, and Package files'),)
-    assert 'Courier requires valid CSV, CRD, and Package files' == str(e.value)
+    assert result == identify.UNKNOWN_FILE
 
 
 @pytest.mark.parametrize('fname', [

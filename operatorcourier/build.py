@@ -16,10 +16,6 @@ class BuildCmd():
             )
         )
 
-    def _get_field_entry(self, yamlContent):
-        yaml_type = identify.get_operator_artifact_type(yamlContent)
-        return yaml_type[0:1].lower() + yaml_type[1:] + 's'
-
     def _get_relative_path(self, path):
         """
         :param path: the path of the file
@@ -31,13 +27,20 @@ class BuildCmd():
 
     def _updateBundle(self, operatorBundle, file_name, yaml_string):
         # Determine which operator file type the yaml is
-        operator_artifact = self._get_field_entry(yaml_string)
+        operator_artifact = identify.get_operator_artifact_type(yaml_string)
+
+        # If the file isn't one of our special types, we ignore it and return
+        if operator_artifact == identify.UNKNOWN_FILE:
+            return operatorBundle
+
+        # Get the array name expected by the dictionary for the given file type
+        op_artifact_plural = operator_artifact[0:1].lower() + operator_artifact[1:] + 's'
 
         # Marshal the yaml into a dictionary
         yaml_data = yaml.safe_load(yaml_string)
 
         # Add the data dictionary to the correct list
-        operatorBundle["data"][operator_artifact].append(yaml_data)
+        operatorBundle["data"][op_artifact_plural].append(yaml_data)
 
         # Encode the dictionary into a string, then use that as a key to reference
         # the file name associated with that yaml file. Then add it to the metadata.

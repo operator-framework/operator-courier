@@ -6,7 +6,6 @@ from operatorcourier.errors import (
     OpCourierValueError,
 
     OpCourierBadYaml,
-    OpCourierBadArtifact,
     OpCourierBadBundle,
 
     OpCourierQuayError,
@@ -19,7 +18,6 @@ from operatorcourier.errors import (
     OpCourierValueError,
 
     OpCourierBadYaml,
-    OpCourierBadArtifact,
     OpCourierBadBundle,
 
     OpCourierQuayErrorResponse
@@ -44,7 +42,6 @@ def test_request_exception_compatibility(op_courier_exception):
     OpCourierValueError,
 
     OpCourierBadYaml,
-    OpCourierBadArtifact,
     OpCourierBadBundle,
 
     OpCourierQuayError,
