@@ -107,3 +107,16 @@ def test_verify_invalid_sources(source_dir, error_message):
 
     outputs = process.stdout.read().decode("utf-8")
     assert error_message in outputs
+
+
+@pytest.mark.parametrize('source_dir', [
+    "valid_yamls_with_single_crd",
+])
+def test_verify_valid_sources_root_dir(source_dir):
+    process = subprocess.Popen(f'operator-courier verify {source_dir}',
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+                               cwd="./tests/test_files/yaml_source_dir/")
+    exit_code = process.wait()
+    assert exit_code == 0

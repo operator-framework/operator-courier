@@ -20,10 +20,15 @@ class BuildCmd():
         """
         :param path: the path of the file
         :return: the file name along with its parent folder
+        If the file is in the root directory from where it was
+        called, just return the input path.
         """
         path = os.path.normpath(path)
         parts = path.split(os.sep)
-        return os.path.join(parts[-2], parts[-1])
+        if len(parts) > 1:
+            return os.path.join(parts[-2], parts[-1])
+        else:
+            return path
 
     def _updateBundle(self, operatorBundle, file_name, yaml_string):
         # Determine which operator file type the yaml is
