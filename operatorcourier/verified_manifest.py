@@ -1,4 +1,5 @@
 import os
+import copy
 import logging
 import json
 from operatorcourier.build import BuildCmd
@@ -20,6 +21,10 @@ class VerifiedManifest:
             raise AttributeError('VerifiedManifest does not have the bundle property '
                                  'in nested cases.')
         return format_bundle(self.bundle_dict)
+
+    @property
+    def validation_dict(self):
+        return copy.deepcopy(self.__validation_dict)
 
     def __init__(self, source_dir, yamls, ui_validate_io, repository):
         self.nested = False
