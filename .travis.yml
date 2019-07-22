@@ -13,11 +13,6 @@ matrix:
     - os: osx
       language: generic
       env:
-        - PYTHON=3.6.0
-        - TOXENV=py36
-    - os: osx
-      language: generic
-      env:
         - PYTHON=3.7.0
         - TOXENV=py37
     - dist: xenial
