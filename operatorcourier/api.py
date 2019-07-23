@@ -52,7 +52,8 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
     if not verified_manifest.is_valid:
         raise OpCourierBadBundle("Resulting bundle is invalid, "
-                                 "input yaml is improperly defined.", {})
+                                 "input yaml is improperly defined.",
+                                 verified_manifest.validation_dict)
 
     return verified_manifest
 

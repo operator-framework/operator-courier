@@ -48,11 +48,19 @@ def test_make_bundle_with_yaml_list(yaml_files, expected):
     assert hasattr(verified_manifest, 'bundle')
 
 
-@pytest.mark.parametrize('yaml_files', [
-    ["tests/test_files/bundles/api/valid_flat_bundle/crd.yml",
-     "tests/test_files/bundles/api/valid_flat_bundle/csv.yaml"]
+@pytest.mark.parametrize('yaml_files,validation_info', [
+    (
+        [
+            "tests/test_files/bundles/api/valid_flat_bundle/crd.yml",
+            "tests/test_files/bundles/api/valid_flat_bundle/csv.yaml"
+        ], {
+            'errors': ['Bundle does not contain any packages.'],
+            'warnings': ['csv metadata.annotations not defined.',
+                         'csv spec.icon not defined']
+        }
+    ),
 ])
-def test_make_bundle_invalid(yaml_files):
+def test_make_bundle_invalid(yaml_files, validation_info):
     yamls = []
     for file in yaml_files:
         with open(file, "r") as yaml_file:
@@ -63,6 +71,7 @@ def test_make_bundle_invalid(yaml_files):
 
     assert str(err.value) == "Resulting bundle is invalid, " \
                              "input yaml is improperly defined."
+    assert err.value.validation_info == validation_info
 
 
 @pytest.mark.parametrize('nested_source_dir', [
