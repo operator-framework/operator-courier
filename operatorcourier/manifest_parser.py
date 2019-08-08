@@ -105,3 +105,15 @@ def get_csvs_pkg_info_from_root(source_dir: str) -> Tuple[List[Tuple], Tuple]:
 def is_yaml_file(file_path):
     yaml_ext = ['.yaml', '.yml']
     return os.path.splitext(file_path)[1] in yaml_ext
+
+
+# removes files_names from folder_path and all subdirectories
+def filterOutFiles(folder_path, file_names):
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        if not os.path.isfile(item_path):
+            filterOutFiles(item_path, file_names)
+        else:
+            if item in file_names:
+                os.remove(item_path)
+    return

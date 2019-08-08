@@ -8,8 +8,11 @@ from operatorcourier.errors import (
     OpCourierQuayCommunicationError,
     OpCourierQuayErrorResponse
 )
+from operatorcourier.manifest_parser import filterOutFiles
 
 logger = logging.getLogger(__name__)
+# BLACK_LIST is a list of files to be removed from the manifest directory
+BLACK_LIST = ["art.yaml", "image-references"]
 
 
 class PushCmd():
@@ -28,6 +31,7 @@ class PushCmd():
         :param auth_token: Authentication token used to push to Quay.io.
         """
         logger.info('Generating 64 bit bundle and pushing to app registry.')
+        filterOutFiles(bundle_dir, BLACK_LIST)
         base64_bundle = self._create_base64_bundle(bundle_dir, repository)
         self._push_to_registry(namespace, repository, release, base64_bundle, auth_token)
 
