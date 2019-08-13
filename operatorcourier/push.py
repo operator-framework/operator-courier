@@ -39,7 +39,7 @@ class PushCmd():
         with TemporaryDirectory() as temp_dir:
             tarfile_name = os.path.join(temp_dir, "%s.tar.gz" % repository)
             with tarfile.open(tarfile_name, "w:gz") as tar:
-                tar.add(bundle_dir, "")
+                tar.add(bundle_dir, os.path.basename(bundle_dir))
             with open(tarfile_name, "rb") as tarball:
                 result = tarball.read()
             result64 = base64.b64encode(result).decode("utf-8")

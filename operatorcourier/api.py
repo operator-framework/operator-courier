@@ -88,12 +88,12 @@ def build_verify_and_push(namespace, repository, revision, token,
                                          validation_output=validation_output)
 
     if not verified_manifest.nested:
-        with TemporaryDirectory() as temp_dir:
+        with TemporaryDirectory(prefix=repository+"-") as temp_dir:
             with open(os.path.join(temp_dir, 'bundle.yaml'), 'w') as outfile:
                 yaml.dump(verified_manifest.bundle, outfile, default_flow_style=False)
             PushCmd().push(temp_dir, namespace, repository, revision, token)
     else:
-        with TemporaryDirectory() as temp_dir:
+        with TemporaryDirectory(prefix=repository+"-") as temp_dir:
             copy_tree(source_dir, temp_dir)
             PushCmd().push(temp_dir, namespace, repository, revision, token)
 
