@@ -19,7 +19,7 @@ metadata_annotations_required_fields = [
         "description": "Without this field, the description displayed in "
                        "the tiles of the UI will be a truncated "
                        "version of spec.description.",
-        "required": True
+        "required": False
     },
     {
         "field": "categories",
@@ -33,7 +33,7 @@ metadata_annotations_required_fields = [
                        "the basic install capability - you can read more "
                        "about operator maturity models here "
                        "https://www.operatorhub.io/getting-started#How-do-I-start-writing-an-Operator?.",  # noqa
-        "required": True
+        "required": False
     },
     {
         "field": "repository",
@@ -51,7 +51,7 @@ metadata_annotations_required_fields = [
         "field": "containerImage",
         "description": "Without this field, the link to the operator "
                        "image will not be displayed in the UI.",
-        "required": True
+        "required": False
     },
     {
         "field": "alm-examples",
@@ -88,7 +88,7 @@ spec_required_fields = [
                        "in the details page side panel. You can for "
                        "example link to some additional Documentation, "
                        "related Blogs or Repositories.",
-        "required": True
+        "required": False
     },
     {
         "field": "icon",
@@ -108,7 +108,7 @@ spec_required_fields = [
                        "will not display the name and contact for users "
                        "to get support in using the operator. "
                        "The field should be a yaml list of name & email pairs.",
-        "required": True
+        "required": False
     },
     {
         "field": "customresourcedefinitions",
