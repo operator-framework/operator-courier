@@ -593,23 +593,24 @@ class ValidateCmd():
 
         spec = csv["spec"]
         provider = spec["provider"]
-        annotations = csv["metadata"]["annotations"]
 
-        # alm-examples check based on crd field
-        if "customresourcedefinitions" in spec:
-            if "owned" in spec["customresourcedefinitions"]:
-                crds = spec["customresourcedefinitions"]["owned"]
-                if "alm-examples" in annotations:
-                    alm_kinds = get_alm_kinds(json.loads(annotations["alm-examples"]))
-                    for crd in crds:
-                        if crd["kind"] not in alm_kinds:
-                            self._log_error("%s CRD does not have an entry in "
-                                            "alm-examples - please add such an "
-                                            "example CR.", crd["kind"])
-                            valid = False
-                else:
-                    self._log_error("You should have alm-examples for every owned CRD")
-                    valid = False
+        if "annotations" in csv["metadata"]:
+            annotations = csv["metadata"]["annotations"]
+
+            # alm-examples check based on crd field
+            if "customresourcedefinitions" in spec:
+                if "owned" in spec["customresourcedefinitions"]:
+                    crds = spec["customresourcedefinitions"]["owned"]
+                    if "alm-examples" in annotations:
+                        alm_kinds = get_alm_kinds(json.loads(annotations["alm-examples"]))
+                        for crd in crds:
+                            if crd["kind"] not in alm_kinds:
+                                self._log_warning("%s CRD does not have an entry in "
+                                                  "alm-examples - please add such an "
+                                                  "example CR.", crd["kind"])
+                    else:
+                        self._log_warning("You should have alm-examples "
+                                          "for every owned CRD")
 
         # provider check
         if isinstance(provider, (dict,)):
@@ -626,34 +627,38 @@ class ValidateCmd():
             valid = False
 
         # maintainers check
-        if isinstance(spec["maintainers"], (list,)):
-            for maintainer in spec["maintainers"]:
-                if "name" not in maintainer or "email" not in maintainer:
-                    self._log_error("csv.spec.maintainers element should contain "
-                                    "both name and email")
-                    valid = False
-                else:
-                    if not is_email(maintainer["email"]):
-                        self._log_error("%s is not a valid email", maintainer["email"])
+        if "maintainer" in spec:
+            if isinstance(spec["maintainers"], (list,)):
+                for maintainer in spec["maintainers"]:
+                    if "name" not in maintainer or "email" not in maintainer:
+                        self._log_error("csv.spec.maintainers element should contain "
+                                        "both name and email")
                         valid = False
-        else:
-            self._log_error("csv.spec.maintainers must be a list of name & email pairs.")
-            valid = False
+                    else:
+                        if not is_email(maintainer["email"]):
+                            self._log_error("%s is not a valid email",
+                                            maintainer["email"])
+                            valid = False
+            else:
+                self._log_error("csv.spec.maintainers must be a list "
+                                "of name & email pairs.")
+                valid = False
 
         # links check
-        if isinstance(spec["links"], (list,)):
-            for link in spec["links"]:
-                if "name" not in link or "url" not in link:
-                    self._log_error("csv.spec.links element should contain "
-                                    "both name and url")
-                    valid = False
-                else:
-                    if not is_url(link["url"]):
-                        self._log_error("%s is not a valid url", link["url"])
+        if "links" in spec:
+            if isinstance(spec["links"], (list,)):
+                for link in spec["links"]:
+                    if "name" not in link or "url" not in link:
+                        self._log_error("csv.spec.links element should contain "
+                                        "both name and url")
                         valid = False
-        else:
-            self._log_error("csv.spec.links must be a list of name & url pairs.")
-            valid = False
+                    else:
+                        if not is_url(link["url"]):
+                            self._log_error("%s is not a valid url", link["url"])
+                            valid = False
+            else:
+                self._log_error("csv.spec.links must be a list of name & url pairs.")
+                valid = False
 
         # version check
         if not is_version(spec["version"]):
@@ -663,10 +668,14 @@ class ValidateCmd():
             valid = False
 
         # capabilities check
-        if not is_capability_level(annotations["capabilities"]):
-            self._log_error("metadata.annotations.capabilities %s is not a "
-                            "valid capabilities level", annotations["capabilities"])
-            valid = False
+        if "annotations" in csv["metadata"]:
+            annotations = csv["metadata"]["annotations"]
+            if "capabilities" in annotations:
+                if not is_capability_level(annotations["capabilities"]):
+                    self._log_error("metadata.annotations.capabilities %s is not a "
+                                    "valid capabilities level",
+                                    annotations["capabilities"])
+                    valid = False
 
         # icon check
         if "icon" in spec:
