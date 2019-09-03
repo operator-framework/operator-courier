@@ -55,8 +55,7 @@ def ensure_application_release_removed(repository_name, release_version):
     ('tests/test_files/yaml_source_dir/valid_yamls_with_single_crd',
      'wrong-repo-name',
      '0.0.1',
-     'ERROR:operatorcourier.validate:'
-     'The packageName (oneagent) in bundle does not match '
+     'ERROR: The packageName (oneagent) in bundle does not match '
      'repository name (wrong-repo-name) provided as command line argument.'),
 ])
 def test_push_invalid_sources(source_dir, repository_name,
@@ -71,4 +70,5 @@ def test_push_invalid_sources(source_dir, repository_name,
     assert exit_code != 0
 
     outputs = process.stdout.read().decode('utf-8')
+    print(outputs)
     assert error_message in outputs
