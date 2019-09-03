@@ -70,5 +70,4 @@ def test_push_invalid_sources(source_dir, repository_name,
     assert exit_code != 0
 
     outputs = process.stdout.read().decode('utf-8')
-    print(outputs)
     assert error_message in outputs
