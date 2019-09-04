@@ -27,7 +27,7 @@ def test_push_valid_sources(source_dir, repository_name):
     with ZipFile(zip_path, 'w') as zipper:
         zipdir(source_dir, zipper)
 
-    upload_url = '%s/v2/%s/zipfile/%s' % (test_omps_host, quay_namespace, release_version)
+    upload_url = get_upload_url(release_version)
     headers = {'Authorization': quay_access_token}
     files = {'file': open(zip_path, 'rb')}
 
@@ -54,7 +54,7 @@ def test_push_invalid_sources(source_dir, repository_name,
     with ZipFile(zip_path, 'w') as zipper:
         zipdir(source_dir, zipper)
 
-    upload_url = '%s/v2/%s/zipfile/%s' % (test_omps_host, quay_namespace, release_version)
+    upload_url = get_upload_url(release_version)
     headers = {'Authorization': quay_access_token}
     files = {'file': open(zip_path, 'rb')}
 
@@ -66,6 +66,16 @@ def test_push_invalid_sources(source_dir, repository_name,
     ensure_zipfile_removed(zip_path)
 
 
+def get_upload_url(release_version):
+    return '%s/v2/%s/zipfile/%s' % (test_omps_host, quay_namespace,
+                                    release_version)
+
+
+def get_delete_url(repository_name, release_version):
+    return '%s/v2/%s/%s/%s' % (test_omps_host, quay_namespace,
+                               repository_name, release_version)
+
+
 def zipdir(dir, zipf):
     for root, dirs, files in walk(dir):
         for file in files:
@@ -75,8 +85,7 @@ def zipdir(dir, zipf):
 
 
 def ensure_application_release_removed_omps(repository_name, release_version):
-    delete_url = '%s/v2/%s/%s/%s' % (test_omps_host, quay_namespace,
-                                     repository_name, release_version)
+    delete_url = get_delete_url(repository_name, release_version)
     headers = {'Authorization': quay_access_token}
 
     res = requests.delete(delete_url, headers=headers)
