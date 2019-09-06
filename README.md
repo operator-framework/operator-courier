@@ -61,7 +61,7 @@ $ operator-courier --verbose push $MANIFESTS_DIR $EXAMPLE_NAMESPACE $EXAMPLE_REP
 ```
 
 For more information, please refer to the following docs about creating valid CSVs
-- [Building a Cluster Service Version (CSV) for the Operator Framework](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/Documentation/design/building-your-csv.md#your-custom-resource-definitions)
+- [Building a Cluster Service Version (CSV) for the Operator Framework](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/doc/design/building-your-csv.md#your-custom-resource-definitions)
 - [Required fields within your CSV](https://github.com/operator-framework/community-operators/blob/master/docs/required-fields.md#categories)
 
 
