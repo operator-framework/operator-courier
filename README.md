@@ -123,13 +123,14 @@ and run flake8 for code linting.
 
 Before running integration tests, you must have write access credentials to a [quay.io](https://quay.io) namespace. See the [authentication](#authentication) section for more information.
 
-First, build the integration docker image:
+First, build the integration docker images:
 
 ```sh
-$ docker build -f integration.Dockerfile -t operator-courier-integration .
+$ docker build -f tests/integration/dockerfiles/integration-base.Dockerfile -t operator-courier-integration-base:latest .
+$ docker build -f tests/integration/dockerfiles/integration.Dockerfile -t operator-courier-integration:latest .
 ```
 
-Then run the tests inside a container:
+Then run the tests inside a container using your access credentials:
 
 ```sh
 $ docker run \
