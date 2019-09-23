@@ -156,9 +156,10 @@ class ValidateCmd():
                 if "group" not in crd['spec']:
                     self._log_error("crd spec.group not defined.")
                     valid = False
-                if "version" not in crd['spec']:
-                    self._log_error("crd spec.version not defined.")
-                    valid = False
+                if "versions" not in crd['spec']:
+                    if "version" not in crd['spec']:
+                        self._log_error("crd spec.version or spec.versions not defined")
+                        valid = False
 
         return valid
 
@@ -271,6 +272,11 @@ class ValidateCmd():
 
                     if 'version' in csvOwnedCrd:
                         if 'spec' in crd:
+                            if 'versions' in crd['spec']:
+                                if csvOwnedCrd['version'] not in crd['spec']['versions']:
+                                    self._log_error('CSV.spec.crd.owned.version is'
+                                                    'not in CRD.spec.versions list')
+                                    valid = False
                             if 'version' in crd['spec']:
                                 if csvOwnedCrd['version'] != crd['spec']['version']:
                                     self._log_error('CRD.spec.version does not match '
