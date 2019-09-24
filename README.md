@@ -20,7 +20,7 @@ Operator Courier is currently supported on Python 3.6 and above.
   ```bash
   $ pip3 install operator-courier==2.0.1
   ```
-    
+
 - To upgrade an existing operator-courier release:
 
   ```bash
@@ -91,29 +91,50 @@ def main():
 ```
 
 ## Building and running the tool locally with pip
+
 ```bash
 $ pip3 install --user .
-
 $ operator-courier
 ```
 
+## Building the docker image
+
+```sh
+$ docker build -f Dockerfile -t $TAG
+$ docker run $TAG operator-courier
+```
+
+For further details, please see the [contribution guide](docs/contributing.md).
+
 ## Testing
 
-### Running the tests
+### Unit tests
 
 [Install tox](https://tox.readthedocs.io/en/latest/install.html) and run:
 
-```bash 
+```bash
 $ tox
 ```
 
 This will run the tests with several versions of Python 3, measure coverage,
 and run flake8 for code linting.
 
-## Building the docker image
-```
-docker build Dockerfile -t $TAG
-docker run $TAG operator-courier
+### Integration tests
+
+Before running integration tests, you must have write access credentials to a [quay.io](https://quay.io) namespace. See the [authentication](#authentication) section for more information.
+
+First, build the integration docker image:
+
+```sh
+$ docker build -f integration.Dockerfile -t operator-courier-integration .
 ```
 
-For further details, please see the [contribution guide](docs/contributing.md).
+Then run the tests inside a container:
+
+```sh
+$ docker run \
+  -e QUAY_NAMESPACE="$QUAY_NAMESPACE" \
+  -e QUAY_ACCESS_TOKEN="$QUAY_ACCESS_TOKEN" \
+  operator-courier-integration:latest \
+  tox -e integration
+```
