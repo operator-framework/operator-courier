@@ -160,3 +160,27 @@ def _test_invalid_bundle(bundleFile):
         unformatted_bundle = unformat_bundle(bundle)
         valid, _ = ValidateCmd().validate(unformatted_bundle)
         assert not valid
+
+
+@pytest.mark.parametrize('file_name', [
+    "tests/test_files/bundles/verification/crdversions.invalid.bundle.yaml",
+])
+def test_invalid_crd_versions_field(file_name):
+    with open(file_name) as f:
+        bundle = yaml.safe_load(f)
+        bundle = unformat_bundle(bundle)
+        valid, _ = ValidateCmd().validate(bundle)
+
+    assert not valid
+
+
+@pytest.mark.parametrize('file_name', [
+    "tests/test_files/bundles/verification/crdversions.valid.bundle.yaml",
+])
+def test_valid_crd_versions_field(file_name):
+    with open(file_name) as f:
+        bundle = yaml.safe_load(f)
+        bundle = unformat_bundle(bundle)
+        valid, _ = ValidateCmd().validate(bundle)
+
+    assert valid
