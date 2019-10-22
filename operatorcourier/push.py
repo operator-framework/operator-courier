@@ -21,7 +21,8 @@ class PushCmd():
     def __init__(self):
         pass
 
-    def push(self, bundle_dir, namespace, repository, release, auth_token):
+    def push(self, bundle_dir, namespace, repository, release, auth_token,
+             quay_host, verify_host):
         """Push takes a bundle and pushes it to the specified app registry repository.
 
         :param bundle_dir: Path to generated local directory that contains the bundle.
@@ -29,6 +30,9 @@ class PushCmd():
         :param repository: Repository name of the application described by the bundle.
         :param release: Release version of the bundle.
         :param auth_token: Authentication token used to push to Quay.io.
+        :param quay_host: Can be 'quay.io' or your private instance hostname.
+        :param verify_host: ``quay_host`` TLS/CA verification.
+                            Either a boolean or a string.
         """
         logger.info('Generating 64 bit bundle and pushing to app registry.')
         filterOutFiles(bundle_dir, BLACK_LIST)
@@ -45,14 +49,16 @@ class PushCmd():
             result64 = base64.b64encode(result).decode("utf-8")
             return result64
 
-    def _push_to_registry(self, namespace, repository, release, bundle, auth_token):
-        push_uri = 'https://quay.io/cnr/api/v1/packages/%s/%s' % (namespace, repository)
+    def _push_to_registry(self, namespace, repository, release, bundle, auth_token,
+                          quay_host, verify_host):
+        push_uri = 'https://%s/cnr/api/v1/packages/%s/%s' % (quay_host, namespace,
+                                                             repository)
         logger.info('Pushing bundle to %s' % push_uri)
         headers = {'Content-Type': 'application/json', 'Authorization': auth_token}
         json = {'blob': bundle, 'release': release, "media_type": "helm"}
 
         try:
-            r = requests.post(push_uri, json=json, headers=headers)
+            r = requests.post(push_uri, json=json, headers=headers, verify=verify_host)
         except requests.RequestException as e:
             msg = str(e)
             logger.error(msg)
