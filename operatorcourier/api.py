@@ -77,8 +77,11 @@ def build_verify_and_push(namespace, repository, revision, token,
     :param validation_output: Path to optional output file for validation logs
     :param quay_host: (optional) Supply this parameter if you use private quay instance.
                       Defaults to 'quay.io'
-    :param verify_host: (optional) ``quay_host`` TLS/CA verification.
-                        Either a boolean or a string. Defaults to ``True``
+    :param verify_host: (optional) Either a boolean, in which case it controls
+                        whether we verify the server's TLS certificate, or a string,
+                        in which case it must be a path to a CA bundle to use.
+                        Defaults to ``True``. For further details:
+                        https://requests.kennethreitz.org/en/v3.0.0/api/#requests.request
 
     :raises TypeError: When called with both source_dir and yamls specified
 

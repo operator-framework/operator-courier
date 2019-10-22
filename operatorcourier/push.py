@@ -31,8 +31,10 @@ class PushCmd():
         :param release: Release version of the bundle.
         :param auth_token: Authentication token used to push to Quay.io.
         :param quay_host: Can be 'quay.io' or your private instance hostname.
-        :param verify_host: ``quay_host`` TLS/CA verification.
-                            Either a boolean or a string.
+        :param verify_host: Either a boolean, in which case it controls whether we verify
+                            the server's TLS certificate, or a string, in which case
+                            it must be a path to a CA bundle to use.
+                            Defaults to ``True``.
         """
         logger.info('Generating 64 bit bundle and pushing to app registry.')
         filterOutFiles(bundle_dir, BLACK_LIST)
