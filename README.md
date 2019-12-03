@@ -5,7 +5,9 @@
 
 The Operator Courier is used to build, validate and push Operator Artifacts.
 
-Operator Courier is currently supported on Python 3.6 and above.
+## Prerequisites
+
+- [Python 3.6](https://www.python.org/downloads/release/python-360/) and above
 
 ## Installation
 
