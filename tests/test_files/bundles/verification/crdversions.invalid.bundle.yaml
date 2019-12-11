@@ -340,6 +340,9 @@ data:
                 - registryNamespace
                 type: object
         version: v1alpha1
+        versions:
+          - v1beta1
+          - v1alpha1
   packages: |
     - channels:
       - currentCSV: marketplace-operator.v0.0.1
