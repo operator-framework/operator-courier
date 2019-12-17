@@ -163,12 +163,16 @@ class ValidateCmd():
                 if "versions" in crd['spec']:
                     if "version" in crd['spec']:
                         if "name" in crd['spec']['versions'][0]:
-                            if crd['spec']['version'] != crd['spec']['versions'][0]['name']:
-                                self._log_error("crd spec.version must be the first element in crd spec.versions")
+                            if crd['spec']['version'] != \
+                                    crd['spec']['versions'][0]['name']:
+                                self._log_error("crd spec.version must be "
+                                                "the first element in crd spec.versions")
                                 valid = False
                         else:
-                            if crd['spec']['version'] != crd['spec']['versions'][0]:
-                                self._log_error("crd spec.version must be the first element in crd spec.versions")
+                            if crd['spec']['version'] != \
+                                    crd['spec']['versions'][0]:
+                                self._log_error("crd spec.version must be "
+                                                "the first element in crd spec.versions")
                                 valid = False
 
         return valid
