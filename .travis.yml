@@ -1,6 +1,5 @@
-sudo: false
 language: python
-matrix:
+jobs:
   include:
     - dist: trusty
       python: "3.6"
@@ -10,13 +9,17 @@ matrix:
       python: "3.7"
       env: TOXENV=py37
       after_success: coveralls
+    - dist: xenial
+      python: "3.8"
+      env: TOXENV=py38
+      after_success: coveralls
     - os: osx
       language: generic
       env:
-        - PYTHON=3.7.0
-        - TOXENV=py37
+        - PYTHON=3.8.0
+        - TOXENV=py38
     - dist: xenial
-      python: "3.7"
+      python: "3.8"
       env: TOXENV=flake8
 
 # Installing Python on macOS for Travis CI: https://pythonhosted.org/CodeChat/.travis.yml.html
