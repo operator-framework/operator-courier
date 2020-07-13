@@ -156,11 +156,52 @@ class ValidateCmd():
                 if "group" not in crd['spec']:
                     self._log_error("crd spec.group not defined.")
                     valid = False
-                if "versions" not in crd['spec']:
-                    if "version" not in crd['spec']:
-                        self._log_error("crd spec.version or spec.versions not defined")
+                if (
+                    "versions" not in crd['spec'] and
+                    "version" not in crd['spec']
+                ):
+                    self._log_error(
+                        "crd spec.version or spec.versions not defined."
+                    )
+                    valid = False
+                if "versions" in crd['spec']:
+                    if not len(crd['spec']['versions']) > 0:
+                        self._log_error("crd spec.versions is empty.")
                         valid = False
-
+                    else:
+                        for ver in crd['spec']['versions']:
+                            if (
+                                "name" not in ver or
+                                "served" not in ver or
+                                "storage" not in ver
+                            ):
+                                self._log_error(
+                                    "crd spec.versions contains an invalid "
+                                    "CustomResourceDefinitionVersion."
+                                )
+                                valid = False
+                        if "version" in crd['spec']:
+                            if (
+                                "name" in crd['spec']['version'][0] and
+                                crd['spec']['version'][0]['name'] !=
+                                crd['spec']['version']
+                            ):
+                                self._log_error(
+                                    "crd spec.version and spec.versions are "
+                                    "defined but spec.versions[0].name "
+                                    "doesn't match spec.version."
+                                )
+                                valid = False
+                        storage_version_list = [
+                            v for v in crd['spec']['versions']
+                            if "storage" in v and v['storage'] is True
+                        ]
+                        if len(storage_version_list) != 1:
+                            self._log_error(
+                                "crd spec.version should contain exactly "
+                                "one version flagged as storage version."
+                            )
+                            valid = False
         return valid
 
     def _csv_validation(self, bundle):
@@ -273,8 +314,11 @@ class ValidateCmd():
                     if 'version' in csvOwnedCrd:
                         if 'spec' in crd:
                             if 'versions' in crd['spec']:
-                                if csvOwnedCrd['version'] not in crd['spec']['versions']:
-                                    self._log_error('CSV.spec.crd.owned.version is'
+                                if csvOwnedCrd['version'] not in [
+                                    v['name'] for v in crd['spec']['versions']
+                                    if 'name' in v
+                                ]:
+                                    self._log_error('CSV.spec.crd.owned.version is '
                                                     'not in CRD.spec.versions list')
                                     valid = False
                             if 'version' in crd['spec']:
