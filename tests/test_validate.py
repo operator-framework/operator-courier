@@ -43,6 +43,40 @@ def test_valid_bundles(bundle, expected_validation_results_dict):
         "csvinstallstrategywrongvalue.invalid.bundle.yaml",
         {'errors': ["csv spec.install.strategy must be one of ['deployment']"],
             'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/csvmissingcrdownedattr.invalid.bundle.yaml",
+        {'errors': [
+            'displayName not defined for item in spec.customresourcedefinitions.',
+            'description not defined for item in spec.customresourcedefinitions.'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/csvemptycrdownedattr.invalid.bundle.yaml",
+        {'errors': ['displayName is empty for item in spec.customresourcedefinitions.',
+                    'description is empty for item in spec.customresourcedefinitions.'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/csvmissingattrspecdesc.invalid.bundle.yaml",
+        {'errors': [
+            'displayName is not defined for descriptors in '
+            'operatorsources.marketplace.redhat.com',
+            'path is not defined for descriptors in '
+            'operatorsources.marketplace.redhat.com',
+            'description is not defined for descriptors in '
+            'operatorsources.marketplace.redhat.com'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/csvemptyattrspecdesc.invalid.bundle.yaml",
+        {'errors': [
+            'displayName is empty for descriptors in '
+            'operatorsources.marketplace.redhat.com',
+            'description is empty for descriptors in '
+            'operatorsources.marketplace.redhat.com',
+            'path is empty for descriptors in '
+            'operatorsources.marketplace.redhat.com'],
+            'warnings': ['csv spec.icon not defined']}),
+    ("tests/test_files/bundles/verification/csvmissingasdownedattr.invalid.bundle.yaml",
+        {'errors': [
+            'kind is empty for item in spec.apiservicedefinitions.',
+            'deploymentName not defined for item in spec.apiservicedefinitions.',
+            'displayName is not defined for descriptors in someothername.redhat.com',
+            'description is not defined for descriptors in someothername.redhat.com'],
+            'warnings': ['csv spec.icon not defined']}),
 ])
 def test_invalid_bundle(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)

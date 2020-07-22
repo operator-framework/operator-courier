@@ -258,21 +258,28 @@ class ValidateCmd():
             valid = False
 
         if "customresourcedefinitions" in spec:
-            customresourcedefinitions = spec["customresourcedefinitions"]
+            if self._csv_crd_validation(
+                    spec["customresourcedefinitions"], bundleData) is False:
+                valid = False
 
-            crdList = []
-            for crd in bundleData[self.crdKey]:
-                try:
-                    name = crd["metadata"]["name"]
-                    crdList.append(name)
-                except KeyError:
-                    pass
+        if "apiservicedefinitions" in spec:
+            if self._csv_asd_validation(spec["apiservicedefinitions"]) is False:
+                valid = False
 
-            if "owned" not in customresourcedefinitions:
-                self._log_error("spec.customresourcedefinitions.owned"
-                                "not defined for csv")
-                return False
+        return valid
 
+    def _csv_crd_validation(self, customresourcedefinitions, bundleData):
+        valid = True
+
+        crdList = []
+        for crd in bundleData[self.crdKey]:
+            try:
+                name = crd["metadata"]["name"]
+                crdList.append(name)
+            except KeyError:
+                pass
+
+        if "owned" in customresourcedefinitions:
             for csvOwnedCrd in customresourcedefinitions["owned"]:
                 if "name" not in csvOwnedCrd:
                     self._log_error("name not defined for item in "
@@ -292,6 +299,46 @@ class ValidateCmd():
                     self._log_error("version not defined for item in "
                                     "spec.customresourcedefinitions.")
                     valid = False
+
+                # Values of name, version and kind above are compared with their
+                # values in the associated CRD files later. Empty string check
+                # is not needed.
+                # displayName and description should be checked for empty
+                # strings.
+                if "displayName" not in csvOwnedCrd:
+                    self._log_error("displayName not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif not csvOwnedCrd["displayName"]:
+                    self._log_error("displayName is empty for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                if "description" not in csvOwnedCrd:
+                    self._log_error("description not defined for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+                elif not csvOwnedCrd["description"]:
+                    self._log_error("description is empty for item in "
+                                    "spec.customresourcedefinitions.")
+                    valid = False
+
+                if "specDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["specDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
+
+                if "statusDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["statusDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
+
+                if "actionDescriptors" in csvOwnedCrd and "name" in csvOwnedCrd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedCrd["actionDescriptors"],
+                            csvOwnedCrd["name"]) is False:
+                        valid = False
 
                 for crd in bundleData[self.crdKey]:
                     if 'name' not in csvOwnedCrd:
@@ -339,6 +386,53 @@ class ValidateCmd():
                                                         "match "
                                                         "CSV.spec.crd.owned.name")
                                         valid = False
+
+        return valid
+
+    def _csv_asd_validation(self, apiservicedefinitions):
+        valid = True
+
+        if "owned" in apiservicedefinitions:
+            # required attributes of owned apiservicedefinitions
+            attributeList = ["group", "version", "kind", "name", "deploymentName",
+                             "displayName", "description"]
+
+            # validate the owned apiservicedefinitions
+            def validate_owned(resource, attribute):
+                if attribute not in resource:
+                    self._log_error(
+                        "%s not defined for item in spec.apiservicedefinitions."
+                        % attribute)
+                    return False
+                elif not resource[attribute]:
+                    self._log_error("%s is empty for item in "
+                                    "spec.apiservicedefinitions." % attribute)
+                    return False
+                return True
+
+            for csvOwnedAsd in apiservicedefinitions["owned"]:
+                for attr in attributeList:
+                    if validate_owned(csvOwnedAsd, attr) is False:
+                        valid = False
+
+                if "specDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["specDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
+
+                if "statusDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["statusDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
+
+                if "actionDescriptors" in csvOwnedAsd and "name" in csvOwnedAsd:
+                    if self._csv_descriptors_validation(
+                            csvOwnedAsd["actionDescriptors"],
+                            csvOwnedAsd["name"]) is False:
+                        valid = False
+
         return valid
 
     def _csv_spec_install_validation(self, install):
@@ -391,6 +485,31 @@ class ValidateCmd():
         else:
             self._log_error("csv spec.install.spec not defined")
             valid = False
+
+        return valid
+
+    def _csv_descriptors_validation(self, descriptors, crdName):
+        valid = True
+
+        # required attributes of descriptors
+        attributeList = ["displayName", "description", "path"]
+
+        # validate a descriptor for a given attribute
+        def validate_descriptor(descriptor, resourceName, attribute):
+            if attribute not in descriptor:
+                self._log_error("%s is not defined for descriptors in %s"
+                                % (attribute, resourceName))
+                return False
+            elif not descriptor[attribute]:
+                self._log_error("%s is empty for descriptors in %s"
+                                % (attribute, resourceName))
+                return False
+            return True
+
+        for desc in descriptors:
+            for attr in attributeList:
+                if validate_descriptor(desc, crdName, attr) is False:
+                    valid = False
 
         return valid
 
