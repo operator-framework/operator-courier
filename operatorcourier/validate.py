@@ -1,3 +1,4 @@
+import collections
 import logging
 import json
 import semver
@@ -238,7 +239,7 @@ class ValidateCmd():
 
     def _csv_spec_validation(self, spec, bundleData):
         valid = True
-
+        validCrdVersions = collections.defaultdict(list)
         warnSpecList = ["displayName", "description", "icon",
                         "version", "provider", "maturity"]
 
@@ -322,10 +323,9 @@ class ValidateCmd():
                                                     'not in CRD.spec.versions list')
                                     valid = False
                             if 'version' in crd['spec']:
-                                if csvOwnedCrd['version'] != crd['spec']['version']:
-                                    self._log_error('CRD.spec.version does not match '
-                                                    'CSV.spec.crd.owned.version')
-                                    valid = False
+                                validCrdVersions[csvOwnedCrd['name']].append(
+                                        csvOwnedCrd['version'] == crd['spec']['version']
+                                )
 
                     if 'name' in csvOwnedCrd:
                         if 'spec' in crd:
@@ -339,6 +339,15 @@ class ValidateCmd():
                                                         "match "
                                                         "CSV.spec.crd.owned.name")
                                         valid = False
+
+        for name, validVersions in validCrdVersions.items():
+            # most likely we will have just one version per CRD; should we
+            # have more than one single version, it is sufficient that just
+            # one, usually the latest, matches.
+            if not any(validVersions):
+                self._log_error('CRD.spec.version does not match '
+                    'CSV.spec.crd.owned.version')
+                valid = False
         return valid
 
     def _csv_spec_install_validation(self, install):

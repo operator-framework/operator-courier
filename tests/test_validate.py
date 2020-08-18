@@ -13,6 +13,10 @@ from operatorcourier.format import unformat_bundle
         {'errors': [], 'warnings': [
             'csv spec.icon not defined',
             'csv spec.maturity not defined']}),
+    ("tests/test_files/bundles/verification/multiplecrds.bundle.yaml",
+        {'errors': [], 'warnings': [
+            'csv metadata.annotations.createdAt not defined',
+            'csv spec.icon not defined']}),
 ])
 def test_valid_bundles(bundle, expected_validation_results_dict):
     valid, validation_results_dict = get_validation_results(bundle)
