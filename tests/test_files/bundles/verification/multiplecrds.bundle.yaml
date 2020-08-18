@@ -1,0 +1,376 @@
+# CSV and CRD both have multiple versions. CSV owns all of them. The CRD ships the old for backward compatibility
+data:
+  clusterServiceVersions: |
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        annotations:
+          capabilities: Basic Install
+          categories: OpenShift Optional
+          certified: "false"
+          containerImage: REPLACE_IMAGE
+          description: Operator to optimize OpenShift clusters for applications sensitive to CPU and network latency.
+          repository: https://github.com/operator-kni/performance-addon-operators
+          support: Red Hat
+        name: performance-addon-operator.v4.6.0
+        namespace: placeholder
+      spec:
+        apiservicedefinitions: {}
+        customresourcedefinitions:
+          owned:
+          - description: PerformanceProfile is the Schema for the performanceprofiles API.
+            displayName: Performance Profile
+            kind: PerformanceProfile
+            name: performanceprofiles.performance.openshift.io
+            version: v1
+          - description: PerformanceProfile is the Schema for the performanceprofiles API.
+            displayName: Performance Profile
+            kind: PerformanceProfile
+            name: performanceprofiles.performance.openshift.io
+            version: v1alpha1
+        description: |+
+          |2-
+      
+              DEVELOPER PREVIEW! There is no official support, do not use in production or any other important clusters.
+              The operator affects worker nodes and can cause instability or service disruption.
+      
+              Performance Addon Operator provides the ability to enable advanced node performance tunings on a set of nodes.
+      
+        displayName: Performance Addon Operator
+        install:
+          spec:
+            clusterPermissions:
+            - rules:
+              - apiGroups:
+                - ""
+                resources:
+                - events
+                verbs:
+                - '*'
+              - apiGroups:
+                - performance.openshift.io
+                resources:
+                - performanceprofiles
+                - performanceprofiles/finalizers
+                - performanceprofiles/status
+                verbs:
+                - '*'
+              - apiGroups:
+                - machineconfiguration.openshift.io
+                resources:
+                - machineconfigs
+                - machineconfigpools
+                - kubeletconfigs
+                verbs:
+                - '*'
+              - apiGroups:
+                - tuned.openshift.io
+                resources:
+                - tuneds
+                verbs:
+                - '*'
+              - apiGroups:
+                - node.k8s.io
+                resources:
+                - runtimeclasses
+                verbs:
+                - '*'
+              serviceAccountName: performance-operator
+            deployments:
+            - name: performance-operator
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    name: performance-operator
+                strategy: {}
+                template:
+                  metadata:
+                    labels:
+                      name: performance-operator
+                  spec:
+                    containers:
+                    - command:
+                      - performance-operator
+                      env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.annotations['olm.targetNamespaces']
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: performance-operator
+                      image: REPLACE_IMAGE
+                      imagePullPolicy: Always
+                      name: performance-operator
+                      resources: {}
+                    serviceAccountName: performance-operator
+            permissions:
+            - rules:
+              - apiGroups:
+                - ""
+                resources:
+                - pods
+                - services
+                - services/finalizers
+                - configmaps
+                verbs:
+                - '*'
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+                verbs:
+                - '*'
+              - apiGroups:
+                - apps
+                resourceNames:
+                - performance-operator
+                resources:
+                - deployments/finalizers
+                verbs:
+                - update
+              - apiGroups:
+                - monitoring.coreos.com
+                resources:
+                - servicemonitors
+                verbs:
+                - '*'
+              serviceAccountName: performance-operator
+          strategy: deployment
+        installModes:
+        - supported: true
+          type: OwnNamespace
+        - supported: true
+          type: SingleNamespace
+        - supported: false
+          type: MultiNamespace
+        - supported: true
+          type: AllNamespaces
+        keywords:
+        - numa
+        - realtime
+        - cpu pinning
+        - hugepages
+        links:
+        - name: Source Code
+          url: https://github.com/openshift-kni/performance-addon-operators
+        maintainers:
+        - email: openshift-operators@redhat.com
+          name: Red Hat
+        maturity: alpha
+        provider:
+          name: Red Hat
+        replaces: performance-addon-operator.v4.5.0
+        version: 4.6.0
+  customResourceDefinitions: |
+    - apiVersion: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      metadata:
+        name: performanceprofiles.performance.openshift.io
+      spec:
+        group: performance.openshift.io
+        names:
+          kind: PerformanceProfile
+          listKind: PerformanceProfileList
+          plural: performanceprofiles
+          singular: performanceprofile
+        scope: Cluster
+        subresources:
+          status: {}
+        validation:
+          openAPIV3Schema:
+            description: PerformanceProfile is the Schema for the performanceprofiles API.
+            properties:
+              apiVersion:
+                description: 'APIVersion defines the versioned schema of this representation
+                  of an object. Servers should convert recognized schemas to the latest
+                  internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                type: string
+              kind:
+                description: 'Kind is a string value representing the REST resource this
+                  object represents. Servers may infer this from the endpoint the client
+                  submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                type: string
+              metadata:
+                type: object
+              spec:
+                description: PerformanceProfileSpec defines the desired state of PerformanceProfile.
+                properties:
+                  additionalKernelArgs:
+                    description: Addional kernel arguments.
+                    items:
+                      type: string
+                    type: array
+                  cpu:
+                    description: CPU defines a set of CPU related parameters.
+                    properties:
+                      balanceIsolated:
+                        description: BalanceIsolated toggles whether or not the Isolated
+                          CPU set is eligible for load balancing work loads. When this option
+                          is set to "false", the Isolated CPU set will be static, meaning
+                          workloads have to explicitly assign each thread to a specific
+                          cpu in order to work across multiple CPUs. Setting this to "true"
+                          allows workloads to be balanced across CPUs. Setting this to "false"
+                          offers the most predictable performance for guaranteed workloads,
+                          but it offloads the complexity of cpu load balancing to the application.
+                          Defaults to "true"
+                        type: boolean
+                      isolated:
+                        description: 'Isolated defines a set of CPUs that will be used to
+                          give to application threads the most execution time possible,
+                          which means removing as many extraneous tasks off a CPU as possible.
+                          It is important to notice the CPU manager can choose any CPU to
+                          run the workload except the reserved CPUs. In order to guarantee
+                          that your workload will run on the isolated CPU:   1. The union
+                          of reserved CPUs and isolated CPUs should include all online CPUs   2.
+                          The isolated CPUs field should be the complementary to reserved
+                          CPUs field'
+                        type: string
+                      reserved:
+                        description: Reserved defines a set of CPUs that will not be used
+                          for any container workloads initiated by kubelet.
+                        type: string
+                    type: object
+                  hugepages:
+                    description: HugePages defines a set of huge pages related parameters.
+                      It is possible to set huge pages with multiple size values at the
+                      same time. For example, hugepages can be set with 1G and 2M, both
+                      values will be set on the node by the performance-addon-operator.
+                      It is important to notice that setting hugepages default size to 1G
+                      will remove all 2M related folders from the node and it will be impossible
+                      to configure 2M hugepages under the node.
+                    properties:
+                      defaultHugepagesSize:
+                        description: DefaultHugePagesSize defines huge pages default size
+                          under kernel boot parameters.
+                        type: string
+                      pages:
+                        description: Pages defines huge pages that we want to allocate at
+                          boot time.
+                        items:
+                          description: HugePage defines the number of allocated huge pages
+                            of the specific size.
+                          properties:
+                            count:
+                              description: Count defines amount of huge pages, maps to the
+                                'hugepages' kernel boot parameter.
+                              format: int32
+                              type: integer
+                            node:
+                              description: Node defines the NUMA node where hugepages will
+                                be allocated, if not specified, pages will be allocated
+                                equally between NUMA nodes
+                              format: int32
+                              type: integer
+                            size:
+                              description: Size defines huge page size, maps to the 'hugepagesz'
+                                kernel boot parameter.
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  machineConfigLabel:
+                    additionalProperties:
+                      type: string
+                    description: MachineConfigLabel defines the label to add to the MachineConfigs
+                      the operator creates. It has to be used in the MachineConfigSelector
+                      of the MachineConfigPool which targets this performance profile. Defaults
+                      to "machineconfiguration.openshift.io/role=<same role as in NodeSelector
+                      label key>"
+                    type: object
+                  machineConfigPoolSelector:
+                    additionalProperties:
+                      type: string
+                    description: MachineConfigPoolSelector defines the MachineConfigPool
+                      label to use in the MachineConfigPoolSelector of resources like KubeletConfigs
+                      created by the operator. Defaults to "machineconfiguration.openshift.io/role=<same
+                      role as in NodeSelector label key>"
+                    type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    description: NodeSelector defines the Node label to use in the NodeSelectors
+                      of resources like Tuned created by the operator. It most likely should,
+                      but does not have to match the node label in the NodeSelector of the
+                      MachineConfigPool which targets this performance profile.
+                    type: object
+                  numa:
+                    description: NUMA defines options related to topology aware affinities
+                    properties:
+                      topologyPolicy:
+                        description: Name of the policy applied when TopologyManager is
+                          enabled Operator defaults to "best-effort"
+                        type: string
+                    type: object
+                  realTimeKernel:
+                    description: RealTimeKernel defines a set of real time kernel related
+                      parameters. RT kernel won't be installed when not set.
+                    properties:
+                      enabled:
+                        description: Enabled defines if the real time kernel packages should
+                          be installed. Defaults to "false"
+                        type: boolean
+                    type: object
+                type: object
+              status:
+                description: PerformanceProfileStatus defines the observed state of PerformanceProfile.
+                properties:
+                  conditions:
+                    description: Conditions represents the latest available observations
+                      of current state.
+                    items:
+                      description: Condition represents the state of the operator's reconciliation
+                        functionality.
+                      properties:
+                        lastHeartbeatTime:
+                          format: date-time
+                          type: string
+                        lastTransitionTime:
+                          format: date-time
+                          type: string
+                        message:
+                          type: string
+                        reason:
+                          type: string
+                        status:
+                          type: string
+                        type:
+                          description: ConditionType is the state of the operator's reconciliation
+                            functionality.
+                          type: string
+                      required:
+                      - status
+                      - type
+                      type: object
+                    type: array
+                  runtimeClass:
+                    description: RuntimeClass contains the name of the RuntimeClass resource
+                      created by the operator.
+                    type: string
+                  tuned:
+                    description: Tuned points to the Tuned custom resource object that contains
+                      the tuning values generated by this operator.
+                    type: string
+                type: object
+            type: object
+        version: v1
+        versions:
+        - name: v1
+          served: true
+          storage: true
+        - name: v1alpha1
+          served: true
+          storage: false
+  packages: |
+    - channels:
+      - currentCSV: performance-addon-operator.v4.6.0
+        name: "4.6"
+      defaultChannel: "4.6"
+      packageName: performance-addon-operator
