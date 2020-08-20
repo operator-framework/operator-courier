@@ -270,7 +270,7 @@ class ValidateCmd():
                     pass
 
             if "owned" not in customresourcedefinitions:
-                self._log_error("spec.customresourcedefinitions.owned"
+                self._log_error("spec.customresourcedefinitions.owned "
                                 "not defined for csv")
                 return False
 
