@@ -269,76 +269,73 @@ class ValidateCmd():
                 except KeyError:
                     pass
 
-            if "owned" not in customresourcedefinitions:
-                self._log_error("spec.customresourcedefinitions.owned"
-                                "not defined for csv")
-                return False
+            if customresourcedefinitions is not None:
+                if "owned" in customresourcedefinitions:
+                    for csvOwnedCrd in customresourcedefinitions["owned"]:
+                        if "name" not in csvOwnedCrd:
+                            self._log_error("name not defined for item in "
+                                            "spec.customresourcedefinitions.")
+                            valid = False
+                        elif csvOwnedCrd["name"] not in crdList:
+                            self._log_error("custom resource definition %s referenced in csv "
+                                            "not defined in root list of crds",
+                                            csvOwnedCrd["name"])
+                            valid = False
 
-            for csvOwnedCrd in customresourcedefinitions["owned"]:
-                if "name" not in csvOwnedCrd:
-                    self._log_error("name not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
-                elif csvOwnedCrd["name"] not in crdList:
-                    self._log_error("custom resource definition %s referenced in csv "
-                                    "not defined in root list of crds",
-                                    csvOwnedCrd["name"])
-                    valid = False
+                        if "kind" not in csvOwnedCrd:
+                            self._log_error("kind not defined for item in "
+                                            "spec.customresourcedefinitions.")
+                            valid = False
+                        if "version" not in csvOwnedCrd:
+                            self._log_error("version not defined for item in "
+                                            "spec.customresourcedefinitions.")
+                            valid = False
 
-                if "kind" not in csvOwnedCrd:
-                    self._log_error("kind not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
-                if "version" not in csvOwnedCrd:
-                    self._log_error("version not defined for item in "
-                                    "spec.customresourcedefinitions.")
-                    valid = False
+                        for crd in bundleData[self.crdKey]:
+                            if 'name' not in csvOwnedCrd:
+                                continue
+                            if 'metadata' not in crd or 'name' not in crd['metadata']:
+                                continue
+                            if csvOwnedCrd['name'] != crd['metadata']['name']:
+                                continue
 
-                for crd in bundleData[self.crdKey]:
-                    if 'name' not in csvOwnedCrd:
-                        continue
-                    if 'metadata' not in crd or 'name' not in crd['metadata']:
-                        continue
-                    if csvOwnedCrd['name'] != crd['metadata']['name']:
-                        continue
+                            if 'kind' in csvOwnedCrd:
+                                if 'spec' in crd:
+                                    if 'names' in crd['spec']:
+                                        if 'kind' in crd['spec']['names']:
+                                            if csvOwnedCrd['kind'] != \
+                                                    crd['spec']['names']['kind']:
+                                                self._log_error('CRD.spec.names.kind does not '
+                                                                'match CSV.spec.crd.owned.kind')
+                                                valid = False
 
-                    if 'kind' in csvOwnedCrd:
-                        if 'spec' in crd:
-                            if 'names' in crd['spec']:
-                                if 'kind' in crd['spec']['names']:
-                                    if csvOwnedCrd['kind'] != \
-                                            crd['spec']['names']['kind']:
-                                        self._log_error('CRD.spec.names.kind does not '
-                                                        'match CSV.spec.crd.owned.kind')
-                                        valid = False
+                            if 'version' in csvOwnedCrd:
+                                if 'spec' in crd:
+                                    if 'versions' in crd['spec']:
+                                        if csvOwnedCrd['version'] not in [
+                                            v['name'] for v in crd['spec']['versions']
+                                            if 'name' in v
+                                        ]:
+                                            self._log_error('CSV.spec.crd.owned.version is '
+                                                            'not in CRD.spec.versions list')
+                                            valid = False
+                                    if 'version' in crd['spec']:
+                                        validCrdVersions[csvOwnedCrd['name']].append(
+                                                csvOwnedCrd['version'] == crd['spec']['version']
+                                        )
 
-                    if 'version' in csvOwnedCrd:
-                        if 'spec' in crd:
-                            if 'versions' in crd['spec']:
-                                if csvOwnedCrd['version'] not in [
-                                    v['name'] for v in crd['spec']['versions']
-                                    if 'name' in v
-                                ]:
-                                    self._log_error('CSV.spec.crd.owned.version is '
-                                                    'not in CRD.spec.versions list')
-                                    valid = False
-                            if 'version' in crd['spec']:
-                                validCrdVersions[csvOwnedCrd['name']].append(
-                                        csvOwnedCrd['version'] == crd['spec']['version']
-                                )
-
-                    if 'name' in csvOwnedCrd:
-                        if 'spec' in crd:
-                            if 'names' in crd['spec'] and 'group' in crd['spec']:
-                                if 'plural' in crd['spec']['names']:
-                                    if csvOwnedCrd['name'] != \
-                                            crd['spec']['names']['plural'] + '.' + \
-                                            crd['spec']['group']:
-                                        self._log_error("`CRD.spec.names.plural`."
-                                                        "`CRD.spec.group` does not "
-                                                        "match "
-                                                        "CSV.spec.crd.owned.name")
-                                        valid = False
+                            if 'name' in csvOwnedCrd:
+                                if 'spec' in crd:
+                                    if 'names' in crd['spec'] and 'group' in crd['spec']:
+                                        if 'plural' in crd['spec']['names']:
+                                            if csvOwnedCrd['name'] != \
+                                                    crd['spec']['names']['plural'] + '.' + \
+                                                    crd['spec']['group']:
+                                                self._log_error("`CRD.spec.names.plural`."
+                                                                "`CRD.spec.group` does not "
+                                                                "match "
+                                                                "CSV.spec.crd.owned.name")
+                                                valid = False
 
         for name, validVersions in validCrdVersions.items():
             # most likely we will have just one version per CRD; should we

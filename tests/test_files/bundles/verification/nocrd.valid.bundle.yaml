@@ -320,6 +320,7 @@ data:
                         - key: tls.key
                           path: apiserver.key
                         secretName: v1beta1.servicecatalog.k8s.io-cert
+        customresourcedefinitions:
         apiservicedefinitions:
           owned:
           - group: servicecatalog.k8s.io
