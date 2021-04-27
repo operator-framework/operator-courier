@@ -25,7 +25,8 @@ setup(
     'pyyaml',
     'requests',
     'validators',
-    'semver'
+    'semver',
+    'setuptools'
   ],
   python_requires='>=3.6, <4',
   setup_requires=['pytest-runner'],
