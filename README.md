@@ -1,3 +1,65 @@
+# Notice 
+---
+**This project is deprecated and is no longer supported or maintained.**
+
+All tests and checks made by this project were moved to the project [operator-framwork/api](https://github.com/operator-framework/api) and specifically to the validator [OperatorHub](https://github.com/operator-framework/api/blob/v0.10.7/pkg/validation/internal/operatorhub.go). Note that any new requirement has been addresssed to the [operator-framwork/api](https://github.com/operator-framework/api).
+
+You can use the [operator-framwork/api](https://github.com/operator-framework/api) directly or use the [Operator-SDK](https://github.com/operator-framework/operator-sdk) CLI to do the checks as follows:
+
+- To verify the bundle spec:
+
+```
+$ operator-sdk bundle validate <bundle-path>
+```
+
+- To verify the bundle against the common criteria to publish in OLM catalogs ( OperatorHub.io ): 
+
+```
+$ operator-sdk bundle validate <bundle-path> --select-optional name=operatorhub
+```
+
+- To verify the bundle against all common validators provided under the operatorframework suite:
+
+```
+$ operator-sdk bundle validate <bundle-path>. --select-optional suite=operatorframework 
+```
+
+**NOTE** If you have been working with packagemanifest you can convert the format to bundle before use the `operator-sdk bundle validate` with SDK ([`operator-sdk pkgman-to-bundle <packagemanifestdir> [flags]`](https://sdk.operatorframework.io/docs/cli/operator-sdk_pkgman-to-bundle/)) or [OPM](https://github.com/operator-framework/operator-registry)(`opm alpha bundle build`) and indeed by loading the directory with [operator-framwork/api](https://github.com/operator-framework/api).
+
+Following an example of the tests called via [operator-framwork/api](https://github.com/operator-framework/api):
+
+```go
+import(
+   ...
+    apimanifests "github.com/operator-framework/api/pkg/manifests"
+    apivalidation "github.com/operator-framework/api/pkg/validation"
+    "github.com/operator-framework/api/pkg/validation/errors"
+   ...
+)
+
+// Load a directory in the packagemanifest or bundle format 
+bundle, err := apimanifests.GetBundleFromDir(path)
+if err != nil {
+   ...
+   return nil
+}
+
+// Call all default validators and the OperatorHubValidator optional one
+validators := apivalidation.DefaultBundleValidators
+validators = validators.WithValidators(apivalidation.OperatorHubValidator)
+objs := bundle.ObjectsToValidate()
+results := validators.Validate(objs...)
+nonEmptyResults := []errors.ManifestResult{}
+for _, result := range results {
+    if result.HasError() || result.HasWarn() {
+        nonEmptyResults = append(nonEmptyResults, result)
+    }
+}
+
+// return the results
+return nonEmptyResults
+```
+
 # Operator Courier
 
 [![Build Status](https://travis-ci.org/operator-framework/operator-courier.svg?branch=master)](https://travis-ci.org/operator-framework/operator-courier)
