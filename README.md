@@ -7,7 +7,7 @@ You can use the [Bundle](https://github.com/operator-framework/operator-registry
 
 **What about `operator-courier verify`? How can I verify the manifests?**  
 
-All tests and checks made by this project were moved to the project [operator-framwork/api](https://github.com/operator-framework/api) and specifically to the validator [OperatorHub](https://github.com/operator-framework/api/blob/v0.10.7/pkg/validation/internal/operatorhub.go). You can use the [operator-framwork/api](https://github.com/operator-framework/api) directly or use the [Operator-SDK](https://github.com/operator-framework/operator-sdk) CLI to do these checks with the command `operator-sdk bundle validate ./bundle --select-optional name=operatorhub`([More info](https://sdk.operatorframework.io/docs/cli/operator-sdk_bundle_validate/)).
+All tests and checks made by this project were moved to the project [operator-framwork/api](https://github.com/operator-framework/api) and specifically to the validator [OperatorHub](https://github.com/operator-framework/api/blob/v0.10.7/pkg/validation/internal/operatorhub.go). You can use the [operator-framwork/api](https://github.com/operator-framework/api) directly or [Operator-SDK](https://github.com/operator-framework/operator-sdk) to do these checks with the command `operator-sdk bundle validate ./bundle --select-optional name=operatorhub`([More info](https://sdk.operatorframework.io/docs/cli/operator-sdk_bundle_validate/)).
 
 # Operator Courier
 
