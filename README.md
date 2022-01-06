@@ -1,3 +1,14 @@
+# Notice 
+
+:warning: **This project is deprecated and is no longer supported or maintained.**
+
+AppRegistry packaging format is no longer supported by [OLM](https://github.com/operator-framework/operator-lifecycle-manager).
+You can use the [Bundle](https://github.com/operator-framework/operator-registry/blob/v1.19.5/docs/design/operator-bundle.md) format and [Operator Registry](https://github.com/operator-framework/operator-registry) instead.
+
+**What about `operator-courier verify`? How can I verify the manifests?**  
+
+All tests and checks made by this project were moved to the project [operator-framwork/api](https://github.com/operator-framework/api) and specifically to the validator [OperatorHub](https://github.com/operator-framework/api/blob/v0.10.7/pkg/validation/internal/operatorhub.go). You can use the [operator-framwork/api](https://github.com/operator-framework/api) directly or [Operator-SDK](https://github.com/operator-framework/operator-sdk) to do these checks with the command `operator-sdk bundle validate ./bundle --select-optional name=operatorhub`([More info](https://sdk.operatorframework.io/docs/cli/operator-sdk_bundle_validate/)).
+
 # Operator Courier
 
 [![Build Status](https://travis-ci.org/operator-framework/operator-courier.svg?branch=master)](https://travis-ci.org/operator-framework/operator-courier)
