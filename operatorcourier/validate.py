@@ -630,6 +630,7 @@ class ValidateCmd():
             valid_categories = [
                 "AI/Machine Learning",
                 "Application Runtime",
+                "Availability",
                 "Big Data",
                 "Cloud Provider",
                 "Developer Tools",
