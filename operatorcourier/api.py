@@ -60,7 +60,8 @@ def build_and_verify(source_dir=None, yamls=None, ui_validate_io=False,
 
 def build_verify_and_push(namespace, repository, revision, token,
                           source_dir=None, yamls=None,
-                          validation_output=None):
+                          validation_output=None,
+                          quay_host='quay.io', verify_host=True):
     """Build verify and push constructs the operator bundle,
     verifies it, and pushes it to an external app registry.
     Currently the only supported app registry is the one
@@ -74,6 +75,13 @@ def build_verify_and_push(namespace, repository, revision, token,
     :param source_dir: Path to local directory of yaml files to be read
     :param yamls: List of yaml strings to create bundle with
     :param validation_output: Path to optional output file for validation logs
+    :param quay_host: (optional) Supply this parameter if you use private quay instance.
+                      Defaults to 'quay.io'
+    :param verify_host: (optional) Either a boolean, in which case it controls
+                        whether we verify the server's TLS certificate, or a string,
+                        in which case it must be a path to a CA bundle to use.
+                        Defaults to ``True``. For further details:
+                        https://requests.kennethreitz.org/en/v3.0.0/api/#requests.request
 
     :raises TypeError: When called with both source_dir and yamls specified
 
