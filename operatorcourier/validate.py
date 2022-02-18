@@ -634,6 +634,7 @@ class ValidateCmd():
                 "Cloud Provider",
                 "Developer Tools",
                 "Database",
+                "Drivers and Plugins", 
                 "Integration & Delivery",
                 "Logging & Tracing",
                 "Monitoring",
